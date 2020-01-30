@@ -24,12 +24,10 @@ public class GFortranToolChain extends AbstractGccCompatibleToolChain implements
 	
 		@Override
 		protected void configureDefaultTools(DefaultGccPlatformToolChain toolChain) {
-			toolChain.getLinker().setExecutable("clang++")
-			toolChain.getcCompiler().setExecutable("clang")
-			toolChain.getCppCompiler().setExecutable("clang++")
-			toolChain.getObjcCompiler().setExecutable("clang")
-			toolChain.getObjcppCompiler().setExecutable("clang++")
-			toolChain.getAssembler().setExecutable("clang")
+			toolChain.getLinker().setExecutable("gfortran")
+			toolChain.getcCompiler().setExecutable("gcc")
+			toolChain.getCppCompiler().setExecutable("gfortran")
+			toolChain.getCppCompiler().
 		}
 	
 		@Override
