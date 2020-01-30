@@ -19,7 +19,7 @@ public interface FortranCompileSpec extends NativeCompileSpec {}
 class FortranCompiler extends GccCompatibleNativeCompiler<FortranCompileSpec> {
 		
 	FortranCompiler(BuildOperationExecutor buildOperationExecutor, CompilerOutputFileNamingSchemeFactory compilerOutputFileNamingSchemeFactory, CommandLineToolInvocationWorker commandLineToolInvocationWorker, CommandLineToolContext invocationContext, String objectFileExtension, boolean useCommandFile, WorkerLeaseService workerLeaseService) {
-		super(buildOperationExecutor, compilerOutputFileNamingSchemeFactory, commandLineToolInvocationWorker, invocationContext, new FortranCompileArgsTransformer(), Transformers.<FortranCompileSpec>noOpTransformer(), objectFileExtension, useCommandFile, workerLeaseService);
+		super(buildOperationExecutor, compilerOutputFileNamingSchemeFactory, commandLineToolInvocationWorker, invocationContext, new FortranCompileArgsTransformer(), Transformers.<FortranCompileSpec>noOpTransformer(), objectFileExtension, useCommandFile, workerLeaseService)
 	}
 
 	private static class FortranCompileArgsTransformer extends GccCompilerArgsTransformer<FortranCompileSpec> { 
@@ -28,23 +28,4 @@ class FortranCompiler extends GccCompatibleNativeCompiler<FortranCompileSpec> {
 			return "fortran"
 		}
 	}
-}
-
-public enum FortranCompilerType implements CompilerType {
-	GFORTRAN("gfortran", "GFortran"),
-	IFORTRAN("ifort","IFortran")
-	
-	FortranCompilerType(String identifier, String description) {
-		this.identifier = identifier;
-		this.description = description;
-	}
-
-	public String getIdentifier() {
-		return identifier;
-	}
-
-	public String getDescription() {
-		return description;
-	}
-
 }

@@ -16,22 +16,22 @@ plugins {
 }
 
 repositories {
-    // Use jcenter for resolving dependencies.
-    // You can declare any Maven/Ivy/file repository here.
-    jcenter()
+	mavenCentral()
 }
 
 dependencies {
     // Use the awesome Spock testing and specification framework
+	testImplementation 'junit:junit:4.12'
     testImplementation 'org.spockframework:spock-core:1.3-groovy-2.5'
+	testImplementation gradleTestKit()
 }
 
 gradlePlugin {
     // Define the plugin
     plugins {
         greeting {
-            id = 'io.github.clearlybaffled.gradle-fortran-plugin.greeting'
-            implementationClass = 'io.github.clearlybaffled.gradle-fortran-plugin.GradleFortranPlugin'
+            id = 'io.github.clearlybaffled.fortran'
+            implementationClass = 'io.github.clearlybaffled.gradle.nativeplugin.toolchain.plugins.GradleFortranPlugin'
         }
     }
 }
