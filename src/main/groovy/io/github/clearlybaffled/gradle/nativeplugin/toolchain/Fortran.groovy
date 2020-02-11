@@ -10,11 +10,10 @@ import org.gradle.nativeplatform.toolchain.internal.CommandLineToolInvocationWor
 import org.gradle.nativeplatform.toolchain.internal.NativeCompileSpec
 import org.gradle.nativeplatform.toolchain.internal.gcc.GccCompatibleNativeCompiler
 import org.gradle.nativeplatform.toolchain.internal.gcc.GccCompilerArgsTransformer
-import org.gradle.nativeplatform.toolchain.internal.metadata.CompilerType
 
-public interface Fortran extends GccCompatibleToolChain {}
+interface Fortran extends GccCompatibleToolChain {}
 
-public interface FortranCompileSpec extends NativeCompileSpec {}
+interface FortranCompileSpec extends NativeCompileSpec {}
 
 class FortranCompiler extends GccCompatibleNativeCompiler<FortranCompileSpec> {
 		

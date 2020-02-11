@@ -23,10 +23,9 @@ import org.gradle.process.internal.ExecActionFactory
 import io.github.clearlybaffled.gradle.nativeplugin.toolchain.Fortran
 import io.github.clearlybaffled.gradle.nativeplugin.toolchain.gfortran.GFortranToolChain
 
-
-public class GFortranCompilePlugins implements Plugin<Project> {
+class GFortranCompilePlugins implements Plugin<Project> {
     @Override
-    public void apply(Project project) {
+    void apply(Project project) {
         project.getPluginManager().apply(NativeComponentPlugin.class)
     }
 
@@ -54,9 +53,9 @@ public class GFortranCompilePlugins implements Plugin<Project> {
     }
 }
 
-public class IFortranCompilePlugins implements Plugin<Project> {
+class IFortranCompilePlugins implements Plugin<Project> {
 	@Override
-	public void apply(Project project) {
+	void apply(Project project) {
 		project.getPluginManager().apply(NativeComponentPlugin.class)
 	}
 
