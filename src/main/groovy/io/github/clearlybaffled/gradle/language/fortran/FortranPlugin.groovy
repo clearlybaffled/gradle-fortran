@@ -1,17 +1,27 @@
 package io.github.clearlybaffled.gradle.language.fortran
 
+import org.apache.groovy.util.Maps
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.internal.service.ServiceRegistry
 import org.gradle.language.base.internal.SourceTransformTaskConfig
 import org.gradle.language.base.internal.registry.LanguageTransformContainer
+import org.gradle.language.base.plugins.ComponentModelBasePlugin
+import org.gradle.language.c.tasks.CPreCompiledHeaderCompile
+import org.gradle.language.nativeplatform.internal.DependentSourceSetInternal
 import org.gradle.language.nativeplatform.internal.NativeLanguageTransform
+import org.gradle.language.nativeplatform.internal.PCHCompileTaskConfig
+import org.gradle.language.nativeplatform.internal.SourceCompileTaskConfig
 import org.gradle.model.Mutate
 import org.gradle.model.RuleSource
+import org.gradle.nativeplatform.internal.DefaultPreprocessingTool
 import org.gradle.nativeplatform.internal.pch.PchEnabledLanguageTransform
+import org.gradle.nativeplatform.plugins.NativeComponentPlugin
 import org.gradle.nativeplatform.toolchain.internal.ToolType
 import org.gradle.platform.base.ComponentType
 import org.gradle.platform.base.TypeBuilder
+
+import io.github.clearlybaffled.gradle.language.fortran.tasks.FortranCompile
 
 /**
  * A plugin for projects wishing to build native binary components from Fortran sources.

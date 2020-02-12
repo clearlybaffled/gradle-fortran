@@ -1,8 +1,13 @@
-package io.github.clearlybaffled.gradle.nativeplugin.toolchain
+package io.github.clearlybaffled.gradle.nativeplatform.toolchain
 
 import javax.annotation.Nullable
 
+import org.gradle.api.internal.file.FileResolver
+import org.gradle.internal.operations.BuildOperationExecutor
+import org.gradle.internal.os.OperatingSystem
 import org.gradle.internal.reflect.Instantiator
+import org.gradle.internal.work.WorkerLeaseService
+import org.gradle.nativeplatform.internal.CompilerOutputFileNamingSchemeFactory
 import org.gradle.nativeplatform.platform.NativePlatform
 import org.gradle.nativeplatform.platform.internal.NativePlatformInternal
 import org.gradle.nativeplatform.toolchain.internal.NativeLanguage
@@ -18,12 +23,13 @@ import org.gradle.nativeplatform.toolchain.internal.gcc.TargetPlatformConfigurat
 import org.gradle.nativeplatform.toolchain.internal.gcc.AbstractGccCompatibleToolChain.CompilerMetaDataProviderWithDefaultArgs
 import org.gradle.nativeplatform.toolchain.internal.gcc.metadata.GccMetadata
 import org.gradle.nativeplatform.toolchain.internal.gcc.metadata.SystemLibraryDiscovery
+import org.gradle.nativeplatform.toolchain.internal.metadata.CompilerMetaDataProvider
 import org.gradle.nativeplatform.toolchain.internal.tools.CommandLineToolSearchResult
 import org.gradle.nativeplatform.toolchain.internal.tools.DefaultGccCommandLineToolConfiguration
 import org.gradle.nativeplatform.toolchain.internal.tools.GccCommandLineToolConfigurationInternal
+import org.gradle.nativeplatform.toolchain.internal.tools.ToolSearchPath
 import org.gradle.platform.base.internal.toolchain.ToolChainAvailability
-
-
+import org.gradle.process.internal.ExecActionFactory
 
 abstract class AbstractFortranCompatibleToolChain extends AbstractGccCompatibleToolChain {
 
@@ -31,7 +37,27 @@ abstract class AbstractFortranCompatibleToolChain extends AbstractGccCompatibleT
 	private final Map<NativePlatform, PlatformToolProvider> toolProviders = [:]
 	private final Instantiator instantiator
 	private final SystemLibraryDiscovery standardLibraryDiscovery
+	private final ToolSearchPath toolSearchPath
 	
+	
+	
+	public AbstractFortranCompatibleToolChain(String name, BuildOperationExecutor buildOperationExecutor,
+			OperatingSystem operatingSystem, FileResolver fileResolver, ExecActionFactory execActionFactory,
+			CompilerOutputFileNamingSchemeFactory compilerOutputFileNamingSchemeFactory,
+			CompilerMetaDataProvider<GccMetadata> metaDataProvider, SystemLibraryDiscovery standardLibraryDiscovery,
+			Instantiator instantiator, WorkerLeaseService workerLeaseService,
+			List<TargetPlatformConfiguration> platformConfigs, Map<NativePlatform, PlatformToolProvider> toolProviders,
+			Instantiator instantiator2, SystemLibraryDiscovery standardLibraryDiscovery2) {
+		super(name, buildOperationExecutor, operatingSystem, fileResolver, execActionFactory,
+				compilerOutputFileNamingSchemeFactory, metaDataProvider, standardLibraryDiscovery, instantiator,
+				workerLeaseService)
+		this.platformConfigs = platformConfigs
+		this.toolProviders = toolProviders
+		instantiator = instantiator2
+		standardLibraryDiscovery = standardLibraryDiscovery2
+		this.toolSearchPath = new ToolSearchPath(operatingSystem)
+	}
+
 	@Override
 	public PlatformToolProvider select(NativeLanguage sourceLanguage, NativePlatformInternal targetMachine) {
 		if (sourceLanguage == ANY) {
@@ -50,7 +76,7 @@ abstract class AbstractFortranCompatibleToolChain extends AbstractGccCompatibleT
 	private PlatformToolProvider createPlatformToolProvider(NativePlatformInternal targetPlatform) {
 		TargetPlatformConfiguration targetPlatformConfigurationConfiguration = getPlatformConfiguration(targetPlatform)
 		if (targetPlatformConfigurationConfiguration) {
-			DefaultFortranPlatformToolChain configurableToolChain = instantiator.newInstance(FortranPlatformToolChain, targetPlatform)
+			FortranPlatformToolChain configurableToolChain = instantiator.newInstance(FortranPlatformToolChain, targetPlatform)
 			addDefaultTools(configurableToolChain)
 			configureDefaultTools(configurableToolChain)
 			targetPlatformConfigurationConfiguration.apply(configurableToolChain)
@@ -60,10 +86,10 @@ abstract class AbstractFortranCompatibleToolChain extends AbstractGccCompatibleT
 			ToolChainAvailability result = new ToolChainAvailability()
 			initTools(configurableToolChain, result)
 			if (!result.isAvailable()) {
-				return new UnavailablePlatformToolProvider(targetPlatform.getOperatingSystem(), result)
+				return new UnavailablePlatformToolProvider(targetPlatform.operatingSystem, result)
 			}
 	
-			return new GccPlatformToolProvider(buildOperationExecutor, targetPlatform.getOperatingSystem(), toolSearchPath, configurableToolChain, execActionFactory, compilerOutputFileNamingSchemeFactory, configurableToolChain.isCanUseCommandFile(), workerLeaseService, new CompilerMetaDataProviderWithDefaultArgs(configurableToolChain.getCompilerProbeArgs(), metaDataProvider))
+			return new GccPlatformToolProvider(buildOperationExecutor, targetPlatform.operatingSystem, toolSearchPath, configurableToolChain, execActionFactory, compilerOutputFileNamingSchemeFactory, configurableToolChain.isCanUseCommandFile(), workerLeaseService, new CompilerMetaDataProviderWithDefaultArgs(configurableToolChain.getCompilerProbeArgs(), metaDataProvider))
 		} else {
 			new UnsupportedPlatformToolProvider(targetPlatform.operatingSystem, String.format("Don't know how to build for %s.", targetPlatform.displayName))
 		}

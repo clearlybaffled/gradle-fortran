@@ -1,4 +1,4 @@
-package io.github.clearlybaffled.gradle.nativeplugin.toolchain.plugins
+package io.github.clearlybaffled.gradle.nativeplatform.toolchain.plugins
 
 import org.gradle.api.NamedDomainObjectFactory
 import org.gradle.api.Plugin
@@ -20,8 +20,8 @@ import org.gradle.nativeplatform.toolchain.internal.gcc.metadata.SystemLibraryDi
 import org.gradle.nativeplatform.toolchain.internal.metadata.CompilerMetaDataProviderFactory
 import org.gradle.process.internal.ExecActionFactory
 
-import io.github.clearlybaffled.gradle.nativeplugin.toolchain.Fortran
-import io.github.clearlybaffled.gradle.nativeplugin.toolchain.gfortran.GFortranToolChain
+import io.github.clearlybaffled.gradle.nativeplatform.toolchain.Fortran
+import io.github.clearlybaffled.gradle.nativeplatform.toolchain.gfortran.GFortranToolChain
 
 class GFortranCompilePlugins implements Plugin<Project> {
     @Override

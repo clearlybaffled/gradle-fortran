@@ -4,7 +4,7 @@ import org.gradle.language.c.CSourceSet
 import org.gradle.language.nativeplatform.internal.AbstractHeaderExportingDependentSourceSet
 import org.gradle.language.nativeplatform.internal.AbstractNativeCompileSpec
 
-import io.github.clearlybaffled.gradle.nativeplugin.toolchain.FortranCompileSpec
+import io.github.clearlybaffled.gradle.nativeplatform.toolchain.FortranCompileSpec
 
 interface FortranSourceSet extends CSourceSet {}
 

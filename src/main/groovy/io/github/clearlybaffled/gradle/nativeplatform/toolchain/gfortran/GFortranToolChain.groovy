@@ -1,4 +1,4 @@
-package io.github.clearlybaffled.gradle.nativeplugin.toolchain.gfortran
+package io.github.clearlybaffled.gradle.nativeplatform.toolchain.gfortran
 
 import org.gradle.api.internal.file.FileResolver
 import org.gradle.internal.operations.BuildOperationExecutor
@@ -10,8 +10,8 @@ import org.gradle.nativeplatform.toolchain.internal.gcc.metadata.SystemLibraryDi
 import org.gradle.nativeplatform.toolchain.internal.metadata.CompilerMetaDataProviderFactory
 import org.gradle.process.internal.ExecActionFactory
 
-import io.github.clearlybaffled.gradle.nativeplugin.toolchain.AbstractFortranCompatibleToolChain
-import io.github.clearlybaffled.gradle.nativeplugin.toolchain.Fortran
+import io.github.clearlybaffled.gradle.nativeplatform.toolchain.AbstractFortranCompatibleToolChain
+import io.github.clearlybaffled.gradle.nativeplatform.toolchain.Fortran
 
 public class GFortranToolChain extends AbstractFortranCompatibleToolChain implements Fortran {
 
