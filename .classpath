@@ -19,10 +19,10 @@
 			<attribute name="test" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="src" output="bin/test" path="src/test/resources">
+	<classpathentry kind="src" output="bin/functionalTest" path="src/test/resources">
 		<attributes>
-			<attribute name="gradle_scope" value="test"/>
-			<attribute name="gradle_used_by_scope" value="test"/>
+			<attribute name="gradle_scope" value="functionalTest"/>
+			<attribute name="gradle_used_by_scope" value="functionalTest"/>
 			<attribute name="test" value="true"/>
 		</attributes>
 	</classpathentry>

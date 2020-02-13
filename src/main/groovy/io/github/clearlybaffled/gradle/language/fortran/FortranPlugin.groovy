@@ -22,6 +22,7 @@ import org.gradle.platform.base.ComponentType
 import org.gradle.platform.base.TypeBuilder
 
 import io.github.clearlybaffled.gradle.language.fortran.tasks.FortranCompile
+import io.github.clearlybaffled.gradle.nativeplatform.toolchain.plugins.GFortranCompilePlugins
 
 /**
  * A plugin for projects wishing to build native binary components from Fortran sources.
@@ -37,6 +38,7 @@ class FortranPlugin implements Plugin<Project> {
     public void apply(Project project) {
         project.getPluginManager().apply(NativeComponentPlugin.class);
         project.getPluginManager().apply(FortranLangPlugin.class);
+		project.getPluginManager().apply(GFortranCompilePlugins.class);
     }
 }
 

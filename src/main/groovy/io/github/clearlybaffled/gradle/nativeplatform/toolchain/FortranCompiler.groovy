@@ -4,6 +4,7 @@ import org.gradle.internal.Transformers
 import org.gradle.internal.operations.BuildOperationExecutor
 import org.gradle.internal.work.WorkerLeaseService
 import org.gradle.nativeplatform.internal.CompilerOutputFileNamingSchemeFactory
+import org.gradle.nativeplatform.platform.NativePlatform
 import org.gradle.nativeplatform.toolchain.internal.CommandLineToolContext
 import org.gradle.nativeplatform.toolchain.internal.CommandLineToolInvocationWorker
 import org.gradle.nativeplatform.toolchain.internal.NativeCompileSpec
@@ -23,5 +24,36 @@ class FortranCompiler extends GccCompatibleNativeCompiler<FortranCompileSpec> {
 		protected String getLanguage() {
 			return "f95"
 		}
+
+		@Override
+		protected void addToolSpecificArgs(FortranCompileSpec spec, List<String> args) {
+			// TODO Auto-generated method stub
+			super.addToolSpecificArgs(spec, args)
+		}
+
+		@Override
+		protected void addIncludeArgs(FortranCompileSpec spec, List<String> args) {
+			// TODO Auto-generated method stub
+			super.addIncludeArgs(spec, args);
+		}
+
+		@Override
+		protected void addMacroArgs(FortranCompileSpec spec, List<String> args) {
+			// TODO Auto-generated method stub
+			super.addMacroArgs(spec, args);
+		}
+
+		@Override
+		protected void addUserArgs(FortranCompileSpec spec, List<String> args) {
+			// TODO Auto-generated method stub
+			super.addUserArgs(spec, args);
+		}
+
+		@Override
+		protected boolean needsStandardIncludes(NativePlatform targetPlatform) {
+			// TODO Auto-generated method stub
+			return super.needsStandardIncludes(targetPlatform);
+		}
+		
 	}
 }

@@ -3,33 +3,58 @@
  */
 package io.github.clearlybaffled.gradle.nativeplugin.toolchain.plugins
 
-import spock.lang.Specification
+import org.gradle.api.Project
+import org.gradle.testfixtures.ProjectBuilder
 import org.gradle.testkit.runner.GradleRunner
+import org.junit.Rule
+import org.junit.rules.TemporaryFolder
 
-/**
- * A simple functional test for the 'io.github.clearlybaffled.gradle-fortran-plugin.greeting' plugin.
- */
-public class GradleFortranPluginFunctionalTest extends Specification {
+import spock.lang.Specification
+import static org.gradle.testkit.runner.TaskOutcome.*
+
+
+class GradleFortranPluginFunctionalTest extends Specification {
+	@Rule TemporaryFolder testProjectDir = new TemporaryFolder()
+	File buildFile
+
+	def setup() {
+		buildFile = testProjectDir.newFile('build.gradle')
+		buildFile << """
+            plugins {
+                id 'io.github.clearlybaffled.fortran'
+            }
+        """
+	}
+	
     def "can run task"() {
         given:
-        def projectDir = new File("build/functionalTest")
-        projectDir.mkdirs()
-        new File(projectDir, "settings.gradle") << ""
-        new File(projectDir, "build.gradle") << """
-            plugins {
-                id('io.github.clearlybaffled.gradle-fortran-plugin')
-            }
+		buildFile << """
+		model {
+			components {
+				test(NativeExecutableSpec)
+			}
+		}
         """
 
         when:
-        def runner = GradleRunner.create()
-        runner.forwardOutput()
-        runner.withPluginClasspath()
-        runner.withArguments("greeting")
-        runner.withProjectDir(projectDir)
-        def result = runner.build()
+        def result = GradleRunner.create()
+        	.forwardOutput()
+	        .withPluginClasspath()
+	        .withArguments("assemble")
+	        .withProjectDir(testProjectDir.root)
+			.build()
 
         then:
-        result.output.contains("Hello from plugin 'io.github.clearlybaffled.gradle-fortran-plugin.greeting'")
+        result.task(":assemble").outcome == SUCCESS
     }
+	
+	def "something else"() {
+		Project project = ProjectBuilder.builder().withProjectDir(dir)build()
+		File buildDir = project.buildDir
+		File srcDir = new File(buildDir, 'src')
+		srcDir.mkdirs()
+		project.apply plugin: '' 
+			
+		
+	}
 }

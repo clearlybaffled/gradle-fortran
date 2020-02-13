@@ -39,22 +39,20 @@ abstract class AbstractFortranCompatibleToolChain extends AbstractGccCompatibleT
 	private final SystemLibraryDiscovery standardLibraryDiscovery
 	private final ToolSearchPath toolSearchPath
 	
-	
+	//(String, org.gradle.internal.operations.DelegatingBuildOperationExecutor, org.gradle.internal.os.OperatingSystem$Linux, org.gradle.api.internal.file.BaseDirFileResolver, org.gradle.process.internal.DefaultExecActionFactory$DecoratingExecActionFactory, org.gradle.nativeplatform.internal.CompilerOutputFileNamingSchemeFactory, org.gradle.nativeplatform.toolchain.internal.metadata.CompilerMetaDataProviderFactory$CachingCompilerMetaDataProvider, org.gradle.nativeplatform.toolchain.internal.gcc.metadata.SystemLibraryDiscovery, org.gradle.internal.instantiation.generator.DependencyInjectingInstantiator, org.gradle.internal.work.StopShieldingWorkerLeaseService)
 	
 	public AbstractFortranCompatibleToolChain(String name, BuildOperationExecutor buildOperationExecutor,
 			OperatingSystem operatingSystem, FileResolver fileResolver, ExecActionFactory execActionFactory,
 			CompilerOutputFileNamingSchemeFactory compilerOutputFileNamingSchemeFactory,
 			CompilerMetaDataProvider<GccMetadata> metaDataProvider, SystemLibraryDiscovery standardLibraryDiscovery,
-			Instantiator instantiator, WorkerLeaseService workerLeaseService,
-			List<TargetPlatformConfiguration> platformConfigs, Map<NativePlatform, PlatformToolProvider> toolProviders,
-			Instantiator instantiator2, SystemLibraryDiscovery standardLibraryDiscovery2) {
+			Instantiator instantiator, WorkerLeaseService workerLeaseService) {
 		super(name, buildOperationExecutor, operatingSystem, fileResolver, execActionFactory,
 				compilerOutputFileNamingSchemeFactory, metaDataProvider, standardLibraryDiscovery, instantiator,
 				workerLeaseService)
 		this.platformConfigs = platformConfigs
 		this.toolProviders = toolProviders
-		instantiator = instantiator2
-		standardLibraryDiscovery = standardLibraryDiscovery2
+		this.instantiator = instantiator
+		this.standardLibraryDiscovery = standardLibraryDiscovery
 		this.toolSearchPath = new ToolSearchPath(operatingSystem)
 	}
 
@@ -96,7 +94,7 @@ abstract class AbstractFortranCompatibleToolChain extends AbstractGccCompatibleT
 	}
 
 	protected void initTools(DefaultGccPlatformToolChain platformToolChain, ToolChainAvailability availability) {
-		// Attempt to determine whether the compiler is the correct implementation
+/*		// Attempt to determine whether the compiler is the correct implementation
 		for (GccCommandLineToolConfigurationInternal tool : platformToolChain.getCompilers()) {
 			CommandLineToolSearchResult compiler = locate(tool)
 			if (compiler.isAvailable()) {
@@ -110,7 +108,7 @@ abstract class AbstractFortranCompatibleToolChain extends AbstractGccCompatibleT
 				initForImplementation(platformToolChain, gccMetadata.getComponent())
 				break
 			}
-		}
+		} */
 	}
 
 	protected void initForImplementation(DefaultGccPlatformToolChain platformToolChain, GccMetadata versionResult) {
