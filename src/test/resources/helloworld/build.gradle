@@ -1,0 +1,7 @@
+apply plugin: 'io.github.clearlybaffled.fortran'
+
+model {
+  components {
+    hello(NativeExecutableSpec)
+  }
+}
