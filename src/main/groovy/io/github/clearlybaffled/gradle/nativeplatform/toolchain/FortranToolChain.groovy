@@ -2,14 +2,28 @@ package io.github.clearlybaffled.gradle.nativeplatform.toolchain
 
 import javax.annotation.Nullable
 
+import org.gradle.language.base.internal.compile.CompileSpec
+import org.gradle.language.base.internal.compile.Compiler
+import org.gradle.language.base.internal.compile.CompilerUtil
+import org.gradle.nativeplatform.internal.LinkerSpec
+import org.gradle.nativeplatform.internal.StaticLibraryArchiverSpec
 import org.gradle.nativeplatform.platform.NativePlatform
 import org.gradle.nativeplatform.toolchain.NativePlatformToolChain
+import org.gradle.nativeplatform.toolchain.internal.NativeCompileSpec
+import org.gradle.nativeplatform.toolchain.internal.SystemLibraries
 import org.gradle.nativeplatform.toolchain.internal.ToolType
+import org.gradle.nativeplatform.toolchain.internal.compilespec.AssembleSpec
+import org.gradle.nativeplatform.toolchain.internal.compilespec.CCompileSpec
+import org.gradle.nativeplatform.toolchain.internal.compilespec.CppCompileSpec
+import org.gradle.nativeplatform.toolchain.internal.gcc.GccPlatformToolProvider
+import org.gradle.nativeplatform.toolchain.internal.metadata.CompilerMetadata
+import org.gradle.nativeplatform.toolchain.internal.tools.CommandLineToolSearchResult
 import org.gradle.nativeplatform.toolchain.internal.tools.DefaultCommandLineToolConfiguration
 import org.gradle.nativeplatform.toolchain.internal.tools.GccCommandLineToolConfigurationInternal
 import org.gradle.nativeplatform.toolchain.internal.tools.ToolRegistry
-import org.gradle.nativeplatform.toolchain.internal.tools.ToolSearchPath
 
+
+interface FortranCompileSpec extends NativeCompileSpec {}
 
 class FortranPlatformToolChain implements NativePlatformToolChain, ToolRegistry {
 	final NativePlatform platform
@@ -69,6 +83,8 @@ class FortranPlatformToolChain implements NativePlatformToolChain, ToolRegistry 
 		tools.put(tool.getToolType(), tool);
 	}
 	
+	
+		
 }
 
 class FortranCommandLineToolConfiguration extends DefaultCommandLineToolConfiguration implements GccCommandLineToolConfigurationInternal {
@@ -82,3 +98,117 @@ class FortranCommandLineToolConfiguration extends DefaultCommandLineToolConfigur
 }
 
 
+class FortranPlatformToolProvider extends GccPlatformToolProvider {
+
+	@Override
+	public CommandLineToolSearchResult locateTool(ToolType compilerType) {
+		// TODO Auto-generated method stub
+		return super.locateTool(compilerType);
+	}
+
+	
+	
+	@Override
+	public <T extends CompileSpec> Compiler<T> newCompiler(Class<T> spec) {
+		if (spec in FortranCompileSpec) {
+			CompilerUtil.castCompiler(createCompiler())
+		} else {
+			super.newCompiler(spec)
+		}
+	}
+
+
+
+	@Override
+	protected Compiler<CppCompileSpec> createCppCompiler() {
+		throw unavailableTool("C++ compiler is not available");
+    }
+
+	@Override
+    protected Compiler<?> createCppPCHCompiler() {
+        throw unavailableTool("C++ pre-compiled header compiler is not available");
+    }
+
+	@Override
+    protected Compiler<?> createCPCHCompiler() {
+        throw unavailableTool("C pre-compiled header compiler is not available");
+    }
+
+	@Override
+    protected Compiler<?> createObjectiveCppCompiler() {
+        throw unavailableTool("Objective-C++ compiler is not available");
+    }
+
+	@Override
+    protected Compiler<?> createObjectiveCppPCHCompiler() {
+        throw unavailableTool("Objective-C++ pre-compiled header compiler is not available");
+    }
+
+	@Override
+    protected Compiler<?> createObjectiveCCompiler() {
+        throw unavailableTool("Objective-C compiler is not available");
+    }
+
+	@Override
+    protected Compiler<?> createObjectiveCPCHCompiler() {
+        throw unavailableTool("Objective-C compiler is not available");
+    }
+
+	@Override
+    protected Compiler<?> createWindowsResourceCompiler() {
+        throw unavailableTool("Windows resource compiler is not available");
+    }
+
+
+	@Override
+	protected Compiler<CCompileSpec> createCCompiler() {
+        
+    }
+	
+	protected Compiler<?> createCompiler() {
+		createCCompiler()
+	}
+	
+	@Override
+	protected Compiler<AssembleSpec> createAssembler() {
+		// TODO Auto-generated method stub
+		return super.createAssembler();
+	}
+
+	@Override
+	protected Compiler<LinkerSpec> createLinker() {
+		// TODO Auto-generated method stub
+		return super.createLinker();
+	}
+
+	@Override
+	protected Compiler<StaticLibraryArchiverSpec> createStaticLibraryArchiver() {
+		// TODO Auto-generated method stub
+		return super.createStaticLibraryArchiver();
+	}
+
+	@Override
+	protected Compiler<?> createSymbolExtractor() {
+		// TODO Auto-generated method stub
+		return super.createSymbolExtractor();
+	}
+
+	@Override
+	protected Compiler<?> createStripper() {
+		// TODO Auto-generated method stub
+		return super.createStripper();
+	}
+
+	@Override
+	public SystemLibraries getSystemLibraries(ToolType compilerType) {
+		// TODO Auto-generated method stub
+		return super.getSystemLibraries(compilerType);
+	}
+
+	@Override
+	public CompilerMetadata getCompilerMetadata(ToolType toolType) {
+		// TODO Auto-generated method stub
+		return super.getCompilerMetadata(toolType);
+	}
+	
+}

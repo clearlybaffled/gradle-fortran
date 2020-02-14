@@ -24,9 +24,7 @@ import org.gradle.nativeplatform.toolchain.internal.gcc.AbstractGccCompatibleToo
 import org.gradle.nativeplatform.toolchain.internal.gcc.metadata.GccMetadata
 import org.gradle.nativeplatform.toolchain.internal.gcc.metadata.SystemLibraryDiscovery
 import org.gradle.nativeplatform.toolchain.internal.metadata.CompilerMetaDataProvider
-import org.gradle.nativeplatform.toolchain.internal.tools.CommandLineToolSearchResult
 import org.gradle.nativeplatform.toolchain.internal.tools.DefaultGccCommandLineToolConfiguration
-import org.gradle.nativeplatform.toolchain.internal.tools.GccCommandLineToolConfigurationInternal
 import org.gradle.nativeplatform.toolchain.internal.tools.ToolSearchPath
 import org.gradle.platform.base.internal.toolchain.ToolChainAvailability
 import org.gradle.process.internal.ExecActionFactory
@@ -59,23 +57,22 @@ abstract class AbstractFortranCompatibleToolChain extends AbstractGccCompatibleT
 	@Override
 	public PlatformToolProvider select(NativeLanguage sourceLanguage, NativePlatformInternal targetMachine) {
 		if (sourceLanguage == ANY) {
-			getProviderForPlatform(targetMachine).locateTool(ToolType.C_COMPILER) ?:
-				new UnavailablePlatformToolProvider(targetMachine.operatingSystem, ToolType.C_COMPILER)
+			select(targetMachine) ?: new UnavailablePlatformToolProvider(targetMachine.operatingSystem, ToolType.C_COMPILER)
 		} else {
-			 new UnsupportedPlatformToolProvider(targetMachine.operatingSystem, String.format("Don't know how to compile language %s.", sourceLanguage))
+			new UnsupportedPlatformToolProvider(targetMachine.operatingSystem, String.format("Don't know how to compile language %s.", sourceLanguage))
 		}
 	}
 	
-	private PlatformToolProvider getProviderForPlatform(NativePlatformInternal targetPlatform) {
-		toolProviders.get(targetPlatform) ?: toolProviders.put(targetPlatform, createPlatformToolProvider(targetPlatform))
+	public PlatformToolProvider select(NativePlatformInternal targetPlatform) {
+		def toolProvider = toolProviders.get(targetPlatform) ?: toolProviders.put(targetPlatform, createPlatformToolProvider(targetPlatform))
+		toolProvider.locateTool(ToolType.C_COMPILER)
 	}
 
 	
 	private PlatformToolProvider createPlatformToolProvider(NativePlatformInternal targetPlatform) {
 		TargetPlatformConfiguration targetPlatformConfigurationConfiguration = getPlatformConfiguration(targetPlatform)
 		if (targetPlatformConfigurationConfiguration) {
-			FortranPlatformToolChain configurableToolChain = instantiator.newInstance(FortranPlatformToolChain, targetPlatform)
-			addDefaultTools(configurableToolChain)
+			FortranPlatformToolChain configurableToolChain = instantiator.newInstance(FortranPlatformToolChain, targetPlatform)		
 			configureDefaultTools(configurableToolChain)
 			targetPlatformConfigurationConfiguration.apply(configurableToolChain)
 			configureActions.execute(configurableToolChain)
@@ -93,44 +90,11 @@ abstract class AbstractFortranCompatibleToolChain extends AbstractGccCompatibleT
 		}
 	}
 
-	protected void initTools(DefaultGccPlatformToolChain platformToolChain, ToolChainAvailability availability) {
-/*		// Attempt to determine whether the compiler is the correct implementation
-		for (GccCommandLineToolConfigurationInternal tool : platformToolChain.getCompilers()) {
-			CommandLineToolSearchResult compiler = locate(tool)
-			if (compiler.isAvailable()) {
-				SearchResult<GccMetadata> gccMetadata = getMetaDataProvider().getCompilerMetaData(toolSearchPath.getPath(), spec -> spec.executable(compiler.getTool()).args(platformToolChain.getCompilerProbeArgs()))
-				availability.mustBeAvailable(gccMetadata)
-				if (!gccMetadata.isAvailable()) {
-					return
-				}
-				// Assume all the other compilers are ok, if they happen to be installed
-				LOGGER.debug("Found {} with version {}", tool.getToolType().getToolName(), gccMetadata)
-				initForImplementation(platformToolChain, gccMetadata.getComponent())
-				break
-			}
-		} */
+
+	protected void initForImplementation(FortranPlatformToolChain platformToolChain, GccMetadata versionResult) {
 	}
 
-	protected void initForImplementation(DefaultGccPlatformToolChain platformToolChain, GccMetadata versionResult) {
-	}
 
-	private void addDefaultTools(DefaultGccPlatformToolChain toolChain) {
-		toolChain.add(instantiator.newInstance(DefaultGccCommandLineToolConfiguration.class, ToolType.C_COMPILER, "gcc"))
-		toolChain.add(instantiator.newInstance(DefaultGccCommandLineToolConfiguration.class, ToolType.CPP_COMPILER, "g++"))
-		toolChain.add(instantiator.newInstance(DefaultGccCommandLineToolConfiguration.class, ToolType.LINKER, "g++"))
-		toolChain.add(instantiator.newInstance(DefaultGccCommandLineToolConfiguration.class, ToolType.STATIC_LIB_ARCHIVER, "ar"))
-		toolChain.add(instantiator.newInstance(DefaultGccCommandLineToolConfiguration.class, ToolType.OBJECTIVECPP_COMPILER, "g++"))
-		toolChain.add(instantiator.newInstance(DefaultGccCommandLineToolConfiguration.class, ToolType.OBJECTIVEC_COMPILER, "gcc"))
-		toolChain.add(instantiator.newInstance(DefaultGccCommandLineToolConfiguration.class, ToolType.ASSEMBLER, "gcc"))
-		toolChain.add(instantiator.newInstance(DefaultGccCommandLineToolConfiguration.class, ToolType.SYMBOL_EXTRACTOR, SymbolExtractorOsConfig.current().getExecutableName()))
-		toolChain.add(instantiator.newInstance(DefaultGccCommandLineToolConfiguration.class, ToolType.STRIPPER, "strip"))
-	}
-
-	protected void configureDefaultTools(DefaultGccPlatformToolChain toolChain) {
-	}
-
-	@Nullable
-	protected TargetPlatformConfiguration getPlatformConfiguration(NativePlatformInternal targetPlatform) {
-		platformConfigs.find { it.supportsPlatform(targetPlatform) }
-	}
+	abstract protected void configureDefaultTools(FortranPlatformToolChain toolChain) 
+	
 }
