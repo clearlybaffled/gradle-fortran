@@ -7,22 +7,19 @@ import org.gradle.internal.service.ServiceRegistry
 import org.gradle.language.base.internal.SourceTransformTaskConfig
 import org.gradle.language.base.internal.registry.LanguageTransformContainer
 import org.gradle.language.base.plugins.ComponentModelBasePlugin
-import org.gradle.language.c.tasks.CPreCompiledHeaderCompile
 import org.gradle.language.nativeplatform.internal.DependentSourceSetInternal
 import org.gradle.language.nativeplatform.internal.NativeLanguageTransform
-import org.gradle.language.nativeplatform.internal.PCHCompileTaskConfig
 import org.gradle.language.nativeplatform.internal.SourceCompileTaskConfig
 import org.gradle.model.Mutate
 import org.gradle.model.RuleSource
 import org.gradle.nativeplatform.internal.DefaultPreprocessingTool
-import org.gradle.nativeplatform.internal.pch.PchEnabledLanguageTransform
-import org.gradle.nativeplatform.plugins.NativeComponentPlugin
+import org.gradle.nativeplatform.plugins.NativeComponentModelPlugin
 import org.gradle.nativeplatform.toolchain.internal.ToolType
 import org.gradle.platform.base.ComponentType
 import org.gradle.platform.base.TypeBuilder
 
 import io.github.clearlybaffled.gradle.language.fortran.tasks.FortranCompile
-import io.github.clearlybaffled.gradle.nativeplatform.toolchain.plugins.GFortranCompilePlugins
+import io.github.clearlybaffled.gradle.nativeplatform.toolchain.FortranToolChains
 
 /**
  * A plugin for projects wishing to build native binary components from Fortran sources.
@@ -36,9 +33,9 @@ import io.github.clearlybaffled.gradle.nativeplatform.toolchain.plugins.GFortran
 class FortranPlugin implements Plugin<Project> {
     @Override
     public void apply(Project project) {
-        project.getPluginManager().apply(NativeComponentPlugin.class);
-        project.getPluginManager().apply(FortranLangPlugin.class);
-		project.getPluginManager().apply(GFortranCompilePlugins.class);
+        project.getPluginManager().apply(NativeComponentModelPlugin)
+        project.getPluginManager().apply(FortranLangPlugin)
+		project.getPluginManager().apply(FortranToolChains)
     }
 }
 
@@ -47,15 +44,15 @@ class FortranLangPlugin implements Plugin<Project> {
 
     @Override
     public void apply(final Project project) {
-        project.getPluginManager().apply(ComponentModelBasePlugin.class);
+        project.getPluginManager().apply(ComponentModelBasePlugin);
     }
 
     @SuppressWarnings("UnusedDeclaration")
     static class Rules extends RuleSource {
         @ComponentType
         void registerLanguage(TypeBuilder<FortranSourceSet> builder) {
-            builder.defaultImplementation(DefaultFortranSourceSet.class);
-            builder.internalView(DependentSourceSetInternal.class);
+            builder.defaultImplementation(DefaultFortranSourceSet);
+            builder.internalView(DependentSourceSetInternal);
         }
 
         @Mutate
@@ -64,16 +61,16 @@ class FortranLangPlugin implements Plugin<Project> {
         }
     }
 
-    private static class Fortran extends NativeLanguageTransform<FortranSourceSet> implements PchEnabledLanguageTransform<FortranSourceSet> {
+    private static class Fortran extends NativeLanguageTransform<FortranSourceSet> {
         @Override
         public Class<FortranSourceSet> getSourceSetType() {
-            return FortranSourceSet.class;
+            return FortranSourceSet;
         }
 
         @Override
         public Map<String, Class<?>> getBinaryTools() {
             Map<String, Class<?>> tools = Maps.newLinkedHashMap();
-            tools.put("fortranCompiler", DefaultPreprocessingTool.class);
+            tools.put("fortranCompiler", DefaultPreprocessingTool);
             return tools;
         }
 
@@ -90,12 +87,8 @@ class FortranLangPlugin implements Plugin<Project> {
 
         @Override
         public SourceTransformTaskConfig getTransformTask() {
-            return new SourceCompileTaskConfig(this, FortranCompile.class);
+            return new SourceCompileTaskConfig(this, FortranCompile);
         }
 
-        @Override
-        public SourceTransformTaskConfig getPchTransformTask() {
-            return new PCHCompileTaskConfig(this, CPreCompiledHeaderCompile.class);
-        }
     }
 }

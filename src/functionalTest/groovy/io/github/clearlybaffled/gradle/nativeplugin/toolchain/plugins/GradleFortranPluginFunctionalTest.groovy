@@ -3,19 +3,20 @@
  */
 package io.github.clearlybaffled.gradle.nativeplugin.toolchain.plugins
 
-import org.gradle.api.Project
-import org.gradle.testfixtures.ProjectBuilder
+import static org.gradle.testkit.runner.TaskOutcome.*
+import static org.junit.Assert.*;
+
 import org.gradle.testkit.runner.GradleRunner
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 
 import spock.lang.Specification
-import static org.gradle.testkit.runner.TaskOutcome.*
 
 
 class GradleFortranPluginFunctionalTest extends Specification {
 	@Rule TemporaryFolder testProjectDir = new TemporaryFolder()
 	File buildFile
+	File srcDir
 
 	def setup() {
 		buildFile = testProjectDir.newFile('build.gradle')
@@ -23,38 +24,41 @@ class GradleFortranPluginFunctionalTest extends Specification {
             plugins {
                 id 'io.github.clearlybaffled.fortran'
             }
-        """
+        """.stripIndent()
+		testProjectDir.newFolder("src","main","f")
+		testProjectDir.newFile("src/main/f/hello.f") << """
+			program hello
+			      print *, "Hello, World!"
+			end program hello
+		""".stripIndent()
+	
 	}
 	
-    def "can run task"() {
+    def "builds program"() {
         given:
 		buildFile << """
-		model {
-			components {
-				test(NativeExecutableSpec)
+			model {
+				components {
+					test(NativeExecutableSpec)
+				}
 			}
-		}
         """
 
         when:
+		println testProjectDir.root
+		
         def result = GradleRunner.create()
         	.forwardOutput()
 	        .withPluginClasspath()
-	        .withArguments("assemble")
+	        .withArguments("build")
 	        .withProjectDir(testProjectDir.root)
 			.build()
-
+		
         then:
-        result.task(":assemble").outcome == SUCCESS
+        //result.task(":assemble").outcome == SUCCESS
+		//result.task(":build").outcome == SUCCESS
+		
+		assertTrue(new File("${testProjectDir.root.absolutePath}/build").exists())
     }
 	
-	def "something else"() {
-		Project project = ProjectBuilder.builder().withProjectDir(dir)build()
-		File buildDir = project.buildDir
-		File srcDir = new File(buildDir, 'src')
-		srcDir.mkdirs()
-		project.apply plugin: '' 
-			
-		
-	}
 }

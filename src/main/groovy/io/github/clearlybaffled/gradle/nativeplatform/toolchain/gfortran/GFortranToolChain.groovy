@@ -6,9 +6,10 @@ import org.gradle.internal.os.OperatingSystem
 import org.gradle.internal.reflect.Instantiator
 import org.gradle.internal.work.WorkerLeaseService
 import org.gradle.nativeplatform.internal.CompilerOutputFileNamingSchemeFactory
-import org.gradle.nativeplatform.toolchain.GccCompatibleToolChain
+import org.gradle.nativeplatform.toolchain.Gcc
 import org.gradle.nativeplatform.toolchain.internal.SymbolExtractorOsConfig
 import org.gradle.nativeplatform.toolchain.internal.ToolType
+import org.gradle.nativeplatform.toolchain.internal.gcc.metadata.GccMetadata
 import org.gradle.nativeplatform.toolchain.internal.gcc.metadata.SystemLibraryDiscovery
 import org.gradle.nativeplatform.toolchain.internal.metadata.CompilerMetaDataProviderFactory
 import org.gradle.process.internal.ExecActionFactory
@@ -17,7 +18,10 @@ import io.github.clearlybaffled.gradle.nativeplatform.toolchain.AbstractFortranC
 import io.github.clearlybaffled.gradle.nativeplatform.toolchain.FortranCommandLineToolConfiguration
 import io.github.clearlybaffled.gradle.nativeplatform.toolchain.FortranPlatformToolChain
 
-interface GFortran extends GccCompatibleToolChain {}
+/*
+ * Needs to extend {@link Gcc} because {@link AbstractNativeCompileTask} is looking for an instnaceof a {@link Gcc} 
+ */
+interface GFortran extends Gcc {}
 
 public class GFortranToolChain extends AbstractFortranCompatibleToolChain implements GFortran {
 
@@ -41,13 +45,17 @@ public class GFortranToolChain extends AbstractFortranCompatibleToolChain implem
 			add(instantiator.newInstance(FortranCommandLineToolConfiguration, ToolType.C_COMPILER, "gfortran"))
 			add(instantiator.newInstance(FortranCommandLineToolConfiguration, ToolType.LINKER, "gfortran"))
 			add(instantiator.newInstance(FortranCommandLineToolConfiguration, ToolType.STATIC_LIB_ARCHIVER, "ar"))
-			add(instantiator.newInstance(FortranCommandLineToolConfiguration, ToolType.ASSEMBLER, "gcc"))
+			add(instantiator.newInstance(FortranCommandLineToolConfiguration, ToolType.ASSEMBLER, "gcc")) //TODO need this?
 			add(instantiator.newInstance(FortranCommandLineToolConfiguration, ToolType.SYMBOL_EXTRACTOR, SymbolExtractorOsConfig.current().getExecutableName()))
 			add(instantiator.newInstance(FortranCommandLineToolConfiguration, ToolType.STRIPPER, "strip"))
 	
 		}
 	}
-
+	
+	@Override
+	protected void initForImplementation(FortranPlatformToolChain platformToolChain, GccMetadata versionResult) {
+		platformToolChain.canUseCommandFile = versionResult.getVersion().getMajor() >= 4
+	}
 	
 }
 

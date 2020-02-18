@@ -13,41 +13,42 @@ import org.gradle.model.Defaults
 import org.gradle.model.RuleSource
 import org.gradle.nativeplatform.internal.CompilerOutputFileNamingSchemeFactory
 import org.gradle.nativeplatform.plugins.NativeComponentPlugin
-import org.gradle.nativeplatform.toolchain.Clang
 import org.gradle.nativeplatform.toolchain.internal.NativeToolChainRegistryInternal
-import org.gradle.nativeplatform.toolchain.internal.clang.ClangToolChain
 import org.gradle.nativeplatform.toolchain.internal.gcc.metadata.SystemLibraryDiscovery
 import org.gradle.nativeplatform.toolchain.internal.metadata.CompilerMetaDataProviderFactory
 import org.gradle.process.internal.ExecActionFactory
 
-import io.github.clearlybaffled.gradle.nativeplatform.toolchain.Fortran
+import io.github.clearlybaffled.gradle.language.fortran.FortranLangPlugin.Fortran
+import io.github.clearlybaffled.gradle.nativeplatform.toolchain.gfortran.GFortran
 import io.github.clearlybaffled.gradle.nativeplatform.toolchain.gfortran.GFortranToolChain
+import io.github.clearlybaffled.gradle.nativeplatform.toolchain.ifortran.IFortran
+import io.github.clearlybaffled.gradle.nativeplatform.toolchain.ifortran.IFortranToolChain
 
 class GFortranCompilePlugins implements Plugin<Project> {
     @Override
     void apply(Project project) {
-        project.getPluginManager().apply(NativeComponentPlugin.class)
+        project.getPluginManager().apply(NativeComponentPlugin)
     }
 
     static class Rules extends RuleSource {
         @Defaults
         public static void addToolChain(NativeToolChainRegistryInternal toolChainRegistry, ServiceRegistry serviceRegistry) {
-            final FileResolver fileResolver = serviceRegistry.get(FileResolver.class)
-            final ExecActionFactory execActionFactory = serviceRegistry.get(ExecActionFactory.class)
-            final CompilerOutputFileNamingSchemeFactory compilerOutputFileNamingSchemeFactory = serviceRegistry.get(CompilerOutputFileNamingSchemeFactory.class)
-            final Instantiator instantiator = serviceRegistry.get(Instantiator.class)
-            final BuildOperationExecutor buildOperationExecutor = serviceRegistry.get(BuildOperationExecutor.class)
-            final CompilerMetaDataProviderFactory metaDataProviderFactory = serviceRegistry.get(CompilerMetaDataProviderFactory.class)
-            final SystemLibraryDiscovery standardLibraryDiscovery = serviceRegistry.get(SystemLibraryDiscovery.class)
-            final WorkerLeaseService workerLeaseService = serviceRegistry.get(WorkerLeaseService.class)
+            final FileResolver fileResolver = serviceRegistry.get(FileResolver)
+            final ExecActionFactory execActionFactory = serviceRegistry.get(ExecActionFactory)
+            final CompilerOutputFileNamingSchemeFactory compilerOutputFileNamingSchemeFactory = serviceRegistry.get(CompilerOutputFileNamingSchemeFactory)
+            final Instantiator instantiator = serviceRegistry.get(Instantiator)
+            final BuildOperationExecutor buildOperationExecutor = serviceRegistry.get(BuildOperationExecutor)
+            final CompilerMetaDataProviderFactory metaDataProviderFactory = serviceRegistry.get(CompilerMetaDataProviderFactory)
+            final SystemLibraryDiscovery standardLibraryDiscovery = serviceRegistry.get(SystemLibraryDiscovery)
+            final WorkerLeaseService workerLeaseService = serviceRegistry.get(WorkerLeaseService)
 
-            toolChainRegistry.registerFactory(Fortran.class, new NamedDomainObjectFactory<Fortran>() {
+            toolChainRegistry.registerFactory(GFortran, new NamedDomainObjectFactory<GFortran>() {
                 @Override
-                public Fortran create(String name) {
-                    return instantiator.newInstance(GFortranToolChain.class, name, buildOperationExecutor, OperatingSystem.current(), fileResolver, execActionFactory, compilerOutputFileNamingSchemeFactory, metaDataProviderFactory, standardLibraryDiscovery, instantiator, workerLeaseService)
+                public GFortran create(String name) {
+                    return instantiator.newInstance(GFortranToolChain, name, buildOperationExecutor, OperatingSystem.current(), fileResolver, execActionFactory, compilerOutputFileNamingSchemeFactory, metaDataProviderFactory, standardLibraryDiscovery, instantiator, workerLeaseService)
                 }
             });
-            toolChainRegistry.registerDefaultToolChain(GFortranToolChain.DEFAULT_NAME, Fortran.class)
+            toolChainRegistry.registerDefaultToolChain(GFortranToolChain.DEFAULT_NAME, GFortran)
         }
 
     }
@@ -56,28 +57,28 @@ class GFortranCompilePlugins implements Plugin<Project> {
 class IFortranCompilePlugins implements Plugin<Project> {
 	@Override
 	void apply(Project project) {
-		project.getPluginManager().apply(NativeComponentPlugin.class)
+		project.getPluginManager().apply(NativeComponentPlugin)
 	}
 
 	static class Rules extends RuleSource {
 		@Defaults
 		public static void addToolChain(NativeToolChainRegistryInternal toolChainRegistry, ServiceRegistry serviceRegistry) {
-			final FileResolver fileResolver = serviceRegistry.get(FileResolver.class)
-			final ExecActionFactory execActionFactory = serviceRegistry.get(ExecActionFactory.class)
-			final CompilerOutputFileNamingSchemeFactory compilerOutputFileNamingSchemeFactory = serviceRegistry.get(CompilerOutputFileNamingSchemeFactory.class)
-			final Instantiator instantiator = serviceRegistry.get(Instantiator.class)
-			final BuildOperationExecutor buildOperationExecutor = serviceRegistry.get(BuildOperationExecutor.class)
-			final CompilerMetaDataProviderFactory metaDataProviderFactory = serviceRegistry.get(CompilerMetaDataProviderFactory.class)
-			final SystemLibraryDiscovery standardLibraryDiscovery = serviceRegistry.get(SystemLibraryDiscovery.class)
-			final WorkerLeaseService workerLeaseService = serviceRegistry.get(WorkerLeaseService.class)
+			final FileResolver fileResolver = serviceRegistry.get(FileResolver)
+			final ExecActionFactory execActionFactory = serviceRegistry.get(ExecActionFactory)
+			final CompilerOutputFileNamingSchemeFactory compilerOutputFileNamingSchemeFactory = serviceRegistry.get(CompilerOutputFileNamingSchemeFactory)
+			final Instantiator instantiator = serviceRegistry.get(Instantiator)
+			final BuildOperationExecutor buildOperationExecutor = serviceRegistry.get(BuildOperationExecutor)
+			final CompilerMetaDataProviderFactory metaDataProviderFactory = serviceRegistry.get(CompilerMetaDataProviderFactory)
+			final SystemLibraryDiscovery standardLibraryDiscovery = serviceRegistry.get(SystemLibraryDiscovery)
+			final WorkerLeaseService workerLeaseService = serviceRegistry.get(WorkerLeaseService)
 
-			toolChainRegistry.registerFactory(Fortran.class, new NamedDomainObjectFactory<Fortran>() {
+			toolChainRegistry.registerFactory(Fortran, new NamedDomainObjectFactory<IFortran>() {
 				@Override
-				public Fortran create(String name) {
-					return instantiator.newInstance(GFortranToolChain.class, name, buildOperationExecutor, OperatingSystem.current(), fileResolver, execActionFactory, compilerOutputFileNamingSchemeFactory, metaDataProviderFactory, standardLibraryDiscovery, instantiator, workerLeaseService)
+				public IFortran create(String name) {
+					return instantiator.newInstance(IFortranToolChain, name, buildOperationExecutor, OperatingSystem.current(), fileResolver, execActionFactory, compilerOutputFileNamingSchemeFactory, metaDataProviderFactory, standardLibraryDiscovery, instantiator, workerLeaseService)
 				}
 			});
-			toolChainRegistry.registerDefaultToolChain(GFortranToolChain.DEFAULT_NAME, Fortran.class)
+			toolChainRegistry.registerDefaultToolChain(GFortranToolChain.DEFAULT_NAME, IFortran)
 		}
 
 	}

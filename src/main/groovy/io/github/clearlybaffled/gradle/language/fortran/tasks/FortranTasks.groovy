@@ -4,7 +4,7 @@ import org.gradle.api.tasks.CacheableTask
 import org.gradle.language.nativeplatform.tasks.AbstractNativeSourceCompileTask
 import org.gradle.nativeplatform.toolchain.internal.NativeCompileSpec
 
-import io.github.clearlybaffled.gradle.language.fortran.DefaultFortranCompileSpec
+import io.github.clearlybaffled.gradle.nativeplatform.toolchain.FortranCompileSpec
 
 /**
  * Compiles Fortran source files into object files.
@@ -13,6 +13,12 @@ import io.github.clearlybaffled.gradle.language.fortran.DefaultFortranCompileSpe
 public class FortranCompile extends AbstractNativeSourceCompileTask {
     @Override
     protected NativeCompileSpec createCompileSpec() {
-        return new DefaultFortranCompileSpec();
+        return new FortranCompileSpec();
     }
+
+	@Override
+	protected void configureSpec(NativeCompileSpec spec) {
+		FortranCompileSpec fSpec = (FortranCompileSpec) spec
+		fspec
+	}
 }

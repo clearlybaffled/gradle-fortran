@@ -73,8 +73,8 @@ class GFortranLinker extends GccLinker {
 			args << spec.systemArgs
 
 			switch (spec.targetPlatform.operatingSystem) {
-				case "windows": args << "--enable-auto-import" << "-Wl,--add-stdcall-alias"
-				case "linux":   args << "-rdynamic"
+				case { it.windows }: args << "--enable-auto-import" << "-Wl,--add-stdcall-alias"
+				case { it.unix } :   args << "-rdynamic"
 			}
 			
 			args << "-o" << spec.outputFile.absolutePath
