@@ -14,8 +14,8 @@ import org.gradle.nativeplatform.toolchain.internal.metadata.CompilerMetaDataPro
 import org.gradle.process.internal.ExecActionFactory
 
 import io.github.clearlybaffled.gradle.nativeplatform.toolchain.AbstractFortranCompatibleToolChain
+import io.github.clearlybaffled.gradle.nativeplatform.toolchain.DefaultFortranPlatformToolChain
 import io.github.clearlybaffled.gradle.nativeplatform.toolchain.FortranCommandLineToolConfiguration
-import io.github.clearlybaffled.gradle.nativeplatform.toolchain.FortranPlatformToolChain
 
 interface IFortran extends GccCompatibleToolChain {}
 
@@ -30,7 +30,7 @@ public class IFortranToolChain extends AbstractFortranCompatibleToolChain implem
 	}
 
 	@Override
-	protected void configureDefaultTools(FortranPlatformToolChain toolChain) {
+	protected void configureDefaultTools(DefaultFortranPlatformToolChain toolChain) {
 		toolChain.with {
 			add(instantiator.newInstance(FortranCommandLineToolConfiguration, ToolType.C_COMPILER, "ifort"))
 			add(instantiator.newInstance(FortranCommandLineToolConfiguration, ToolType.LINKER, "ifort"))

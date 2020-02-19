@@ -45,15 +45,14 @@ class GradleFortranPluginFunctionalTest extends Specification {
         """
 
         when:
-		println testProjectDir.root
-		
-        def result = GradleRunner.create()
+	    def result = GradleRunner.create()
         	.forwardOutput()
 	        .withPluginClasspath()
-	        .withArguments("build")
+	        .withArguments("--stacktrace", "--info", "build")
+			.withDebug(true)
 	        .withProjectDir(testProjectDir.root)
 			.build()
-		
+	
         then:
         //result.task(":assemble").outcome == SUCCESS
 		//result.task(":build").outcome == SUCCESS

@@ -5,6 +5,7 @@ import javax.annotation.Nullable
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.internal.file.FileResolver
+import org.gradle.internal.impldep.com.google.common.collect.ImmutableList
 import org.gradle.internal.operations.BuildOperationExecutor
 import org.gradle.internal.os.OperatingSystem
 import org.gradle.internal.reflect.Instantiator
@@ -12,14 +13,23 @@ import org.gradle.internal.work.WorkerLeaseService
 import org.gradle.language.base.internal.compile.CompileSpec
 import org.gradle.language.base.internal.compile.Compiler
 import org.gradle.language.base.internal.compile.CompilerUtil
+import org.gradle.language.base.internal.compile.DefaultCompilerVersion
+import org.gradle.language.base.internal.compile.VersionAwareCompiler
 import org.gradle.language.nativeplatform.internal.AbstractNativeCompileSpec
 import org.gradle.nativeplatform.internal.CompilerOutputFileNamingSchemeFactory
 import org.gradle.nativeplatform.internal.LinkerSpec
 import org.gradle.nativeplatform.internal.StaticLibraryArchiverSpec
 import org.gradle.nativeplatform.platform.NativePlatform
 import org.gradle.nativeplatform.platform.internal.NativePlatformInternal
+import org.gradle.nativeplatform.platform.internal.OperatingSystemInternal
 import org.gradle.nativeplatform.toolchain.NativePlatformToolChain
+import org.gradle.nativeplatform.toolchain.internal.CommandLineToolContext
+import org.gradle.nativeplatform.toolchain.internal.CommandLineToolInvocationWorker
+import org.gradle.nativeplatform.toolchain.internal.DefaultCommandLineToolInvocationWorker
+import org.gradle.nativeplatform.toolchain.internal.DefaultMutableCommandLineToolContext
+import org.gradle.nativeplatform.toolchain.internal.MutableCommandLineToolContext
 import org.gradle.nativeplatform.toolchain.internal.NativeLanguage
+import org.gradle.nativeplatform.toolchain.internal.OutputCleaningCompiler
 import org.gradle.nativeplatform.toolchain.internal.PlatformToolProvider
 import org.gradle.nativeplatform.toolchain.internal.SystemLibraries
 import org.gradle.nativeplatform.toolchain.internal.ToolType
@@ -41,9 +51,12 @@ import org.gradle.nativeplatform.toolchain.internal.tools.DefaultCommandLineTool
 import org.gradle.nativeplatform.toolchain.internal.tools.GccCommandLineToolConfigurationInternal
 import org.gradle.nativeplatform.toolchain.internal.tools.ToolRegistry
 import org.gradle.nativeplatform.toolchain.internal.tools.ToolSearchPath
+import org.gradle.platform.base.internal.toolchain.ComponentNotFound
+import org.gradle.platform.base.internal.toolchain.SearchResult
 import org.gradle.platform.base.internal.toolchain.ToolChainAvailability
 import org.gradle.process.internal.ExecActionFactory
 
+import io.github.clearlybaffled.gradle.nativeplatform.toolchain.gfortran.FortranCompiler
 import io.github.clearlybaffled.gradle.nativeplatform.toolchain.plugins.GFortranCompilePlugins
 import io.github.clearlybaffled.gradle.nativeplatform.toolchain.plugins.IFortranCompilePlugins
 
@@ -52,11 +65,12 @@ class FortranToolChains implements Plugin<Project> {
 	@Override
 	public void apply (Project project) {
 		project.getPluginManager().apply(GFortranCompilePlugins)
-		project.getPluginManager().apply(IFortranCompilePlugins)
+		//project.getPluginManager().apply(IFortranCompilePlugins)
 	}
 }
 
-class FortranCompileSpec extends AbstractNativeCompileSpec  {}
+interface FortranCompileSpec extends CCompileSpec {} 
+class DefaultFortranCompileSpec extends AbstractNativeCompileSpec implements FortranCompileSpec {}
 
 interface FortranPlatformToolChain extends NativePlatformToolChain, ToolRegistry {}
 
@@ -67,7 +81,7 @@ class DefaultFortranPlatformToolChain implements FortranPlatformToolChain {
 	def canUseCommandFile = true
 	
 	public DefaultFortranPlatformToolChain(NativePlatform platform) {
-		this.platform = platform;	
+		this.platform = platform	
 	}
 	
 	public void compilerProbeArgs(String... args) {
@@ -113,11 +127,11 @@ class DefaultFortranPlatformToolChain implements FortranPlatformToolChain {
 	@Nullable
 	@Override
 	GccCommandLineToolConfigurationInternal getTool(ToolType toolType) {
-		tools.get(toolType);
+		tools.get(toolType)
 	}
 
 	public void add(FortranCommandLineToolConfiguration tool) {
-		tools.put(tool.getToolType(), tool);
+		tools.put(tool.getToolType(), tool)
 	}
 	
 	public Collection<FortranCommandLineToolConfiguration> getCompilers() {
@@ -138,10 +152,29 @@ class FortranCommandLineToolConfiguration extends DefaultCommandLineToolConfigur
 
 class FortranPlatformToolProvider extends GccPlatformToolProvider {
 
+	private final ToolSearchPath toolSearchPath
+	private final ToolRegistry toolRegistry
+	private final ExecActionFactory execActionFactory
+	private final CompilerOutputFileNamingSchemeFactory compilerOutputFileNamingSchemeFactory
+	private final boolean useCommandFile
+	private final WorkerLeaseService workerLeaseService
+	private final CompilerMetaDataProvider<GccMetadata> metadataProvider
+
+	FortranPlatformToolProvider(BuildOperationExecutor buildOperationExecutor, OperatingSystemInternal targetOperatingSystem, ToolSearchPath toolSearchPath, ToolRegistry toolRegistry, ExecActionFactory execActionFactory, CompilerOutputFileNamingSchemeFactory compilerOutputFileNamingSchemeFactory, boolean useCommandFile, WorkerLeaseService workerLeaseService, CompilerMetaDataProvider<GccMetadata> metadataProvider) {
+		super(buildOperationExecutor, targetOperatingSystem, toolSearchPath, toolRegistry, execActionFactory, compilerOutputFileNamingSchemeFactory, useCommandFile, workerLeaseService, metadataProvider)
+		this.toolRegistry = toolRegistry
+		this.toolSearchPath = toolSearchPath
+		this.compilerOutputFileNamingSchemeFactory = compilerOutputFileNamingSchemeFactory
+		this.useCommandFile = useCommandFile
+		this.execActionFactory = execActionFactory
+		this.workerLeaseService = workerLeaseService
+		this.metadataProvider = metadataProvider
+	}
+
 	@Override
 	public CommandLineToolSearchResult locateTool(ToolType compilerType) {
 		// TODO Auto-generated method stub
-		return super.locateTool(compilerType);
+		return super.locateTool(compilerType)
 	}
 	
 	@Override
@@ -155,94 +188,136 @@ class FortranPlatformToolProvider extends GccPlatformToolProvider {
 
 	@Override
 	protected Compiler<CppCompileSpec> createCppCompiler() {
-		throw unavailableTool("C++ compiler is not available");
+		throw unavailableTool("C++ compiler is not available")
     }
 
 	@Override
     protected Compiler<?> createCppPCHCompiler() {
-        throw unavailableTool("C++ pre-compiled header compiler is not available");
+        throw unavailableTool("C++ pre-compiled header compiler is not available")
     }
 
 	@Override
     protected Compiler<?> createCPCHCompiler() {
-        throw unavailableTool("C pre-compiled header compiler is not available");
+        throw unavailableTool("C pre-compiled header compiler is not available")
     }
 
 	@Override
     protected Compiler<?> createObjectiveCppCompiler() {
-        throw unavailableTool("Objective-C++ compiler is not available");
+        throw unavailableTool("Objective-C++ compiler is not available")
     }
 
 	@Override
     protected Compiler<?> createObjectiveCppPCHCompiler() {
-        throw unavailableTool("Objective-C++ pre-compiled header compiler is not available");
+        throw unavailableTool("Objective-C++ pre-compiled header compiler is not available")
     }
 
 	@Override
     protected Compiler<?> createObjectiveCCompiler() {
-        throw unavailableTool("Objective-C compiler is not available");
+        throw unavailableTool("Objective-C compiler is not available")
     }
 
 	@Override
     protected Compiler<?> createObjectiveCPCHCompiler() {
-        throw unavailableTool("Objective-C compiler is not available");
+        throw unavailableTool("Objective-C compiler is not available")
     }
 
 	@Override
     protected Compiler<?> createWindowsResourceCompiler() {
-        throw unavailableTool("Windows resource compiler is not available");
+        throw unavailableTool("Windows resource compiler is not available")
     }
 
 
 	@Override
 	protected Compiler<CCompileSpec> createCCompiler() {
-        
+        return createCompiler()
     }
 	
 	protected Compiler<FortranCompileSpec> createCompiler() {
-		
+		GccCommandLineToolConfigurationInternal compilerTool = toolRegistry.getTool(ToolType.C_COMPILER)
+		def compiler = new FortranCompiler(buildOperationExecutor, compilerOutputFileNamingSchemeFactory, commandLineTool(compilerTool), context(compilerTool), getObjectFileExtension(), useCommandFile, workerLeaseService)
+		def outputCleaningCompiler = new OutputCleaningCompiler<FortranCompileSpec>(compiler, compilerOutputFileNamingSchemeFactory, getObjectFileExtension())
+		def gccMetadata = getGccMetadata(compilerTool)
+		return new VersionAwareCompiler<FortranCompileSpec>(compiler, new DefaultCompilerVersion(
+			metadataProvider.compilerType.identifier,
+			gccMetadata.component.vendor,
+			gccMetadata.component.version)
+		)
+	}
+
+	private CommandLineToolInvocationWorker commandLineTool(GccCommandLineToolConfigurationInternal tool) {
+		ToolType key = tool.toolType
+		String exeName = tool.executable
+		return new DefaultCommandLineToolInvocationWorker(key.toolName, toolSearchPath.locate(key, exeName).tool, execActionFactory)
+	}
+
+	private CommandLineToolContext context(GccCommandLineToolConfigurationInternal toolConfiguration) {
+		MutableCommandLineToolContext baseInvocation = new DefaultMutableCommandLineToolContext()
+		// MinGW requires the path to be set
+		baseInvocation.addPath(toolSearchPath.getPath())
+		baseInvocation.addEnvironmentVar("CYGWIN", "nodosfilewarning")
+		baseInvocation.argAction = toolConfiguration.argAction
+
+		String developerDir = System.getenv("DEVELOPER_DIR")
+		if (developerDir != null) {
+			baseInvocation.addEnvironmentVar("DEVELOPER_DIR", developerDir)
+		}
+		return baseInvocation
+	}
+	
+	private SearchResult<GccMetadata> getGccMetadata(ToolType compilerType) {
+		GccCommandLineToolConfigurationInternal compiler = toolRegistry.getTool(compilerType)
+		if (compiler == null) {
+			return new ComponentNotFound<GccMetadata>("Tool " + compilerType.toolName + " is not available")
+		}
+		CommandLineToolSearchResult searchResult = toolSearchPath.locate(compiler.toolType, compiler.executable)
+		String language = "f95"  // TODO: BADD HARCODING
+		List<String> languageArgs = language == null ? Collections.<String>emptyList() : ImmutableList.of("-x", language)
+
+		return metadataProvider.getCompilerMetaData(toolSearchPath.getPath()) { spec ->
+			spec.executable(searchResult.tool).args(languageArgs)
+		}
 	}
 	
 	@Override
 	protected Compiler<AssembleSpec> createAssembler() {
 		// TODO Auto-generated method stub
-		return super.createAssembler();
+		return super.createAssembler()
 	}
 
 	@Override
 	protected Compiler<LinkerSpec> createLinker() {
 		// TODO Auto-generated method stub
-		return super.createLinker();
+		return super.createLinker()
 	}
 
 	@Override
 	protected Compiler<StaticLibraryArchiverSpec> createStaticLibraryArchiver() {
 		// TODO Auto-generated method stub
-		return super.createStaticLibraryArchiver();
+		return super.createStaticLibraryArchiver()
 	}
 
 	@Override
 	protected Compiler<?> createSymbolExtractor() {
 		// TODO Auto-generated method stub
-		return super.createSymbolExtractor();
+		return super.createSymbolExtractor()
 	}
 
 	@Override
 	protected Compiler<?> createStripper() {
 		// TODO Auto-generated method stub
-		return super.createStripper();
+		return super.createStripper()
 	}
 
 	@Override
 	public SystemLibraries getSystemLibraries(ToolType compilerType) {
 		// TODO Auto-generated method stub
-		return super.getSystemLibraries(compilerType);
+		return super.getSystemLibraries(compilerType)
 	}
 
 	@Override
 	public CompilerMetadata getCompilerMetadata(ToolType toolType) {
 		// TODO Auto-generated method stub
-		return super.getCompilerMetadata(toolType);
+		return super.getCompilerMetadata(toolType)
 	}
 	
 }
@@ -279,7 +354,7 @@ abstract class AbstractFortranCompatibleToolChain extends AbstractGccCompatibleT
 
 	@Override
 	public PlatformToolProvider select(NativeLanguage sourceLanguage, NativePlatformInternal targetMachine) {
-		if (sourceLanguage == ANY) {
+		if (sourceLanguage == NativeLanguage.ANY) {
 			select(targetMachine) ?: new UnavailablePlatformToolProvider(targetMachine.operatingSystem, ToolType.C_COMPILER)
 		} else {
 			new UnsupportedPlatformToolProvider(targetMachine.operatingSystem, String.format("Don't know how to compile language %s.", sourceLanguage))
@@ -295,7 +370,7 @@ abstract class AbstractFortranCompatibleToolChain extends AbstractGccCompatibleT
 	private PlatformToolProvider createPlatformToolProvider(NativePlatformInternal targetPlatform) {
 		TargetPlatformConfiguration targetPlatformConfigurationConfiguration = getPlatformConfiguration(targetPlatform)
 		if (targetPlatformConfigurationConfiguration) {
-			FortranPlatformToolChain configurableToolChain = instantiator.newInstance(FortranPlatformToolChain, targetPlatform)
+			DefaultFortranPlatformToolChain configurableToolChain = instantiator.newInstance(DefaultFortranPlatformToolChain, targetPlatform)
 			configureDefaultTools(configurableToolChain)
 			targetPlatformConfigurationConfiguration.apply(configurableToolChain)
 			configureActions.execute(configurableToolChain)
@@ -314,10 +389,10 @@ abstract class AbstractFortranCompatibleToolChain extends AbstractGccCompatibleT
 	}
 
 
-	protected void initForImplementation(FortranPlatformToolChain platformToolChain, GccMetadata versionResult) {
+	protected void initForImplementation(DefaultFortranPlatformToolChain platformToolChain, GccMetadata versionResult) {
 	}
 
 
-	abstract protected void configureDefaultTools(FortranPlatformToolChain toolChain)
+	abstract protected void configureDefaultTools(DefaultFortranPlatformToolChain toolChain)
 	
 }
