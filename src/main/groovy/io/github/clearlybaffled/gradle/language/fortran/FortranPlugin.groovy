@@ -1,17 +1,22 @@
 package io.github.clearlybaffled.gradle.language.fortran
 
 import org.apache.groovy.util.Maps
+import org.gradle.api.Action
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.internal.service.ServiceRegistry
 import org.gradle.language.base.internal.SourceTransformTaskConfig
 import org.gradle.language.base.internal.registry.LanguageTransformContainer
 import org.gradle.language.base.plugins.ComponentModelBasePlugin
+import org.gradle.language.javascript.JavaScriptSourceSet
 import org.gradle.language.nativeplatform.internal.DependentSourceSetInternal
 import org.gradle.language.nativeplatform.internal.NativeLanguageTransform
 import org.gradle.language.nativeplatform.internal.SourceCompileTaskConfig
+import org.gradle.model.Each
+import org.gradle.model.Finalize
 import org.gradle.model.Mutate
 import org.gradle.model.RuleSource
+import org.gradle.nativeplatform.NativeBinarySpec
 import org.gradle.nativeplatform.internal.DefaultPreprocessingTool
 import org.gradle.nativeplatform.plugins.NativeComponentModelPlugin
 import org.gradle.nativeplatform.toolchain.internal.ToolType
@@ -44,20 +49,24 @@ class FortranLangPlugin implements Plugin<Project> {
 
     @Override
     public void apply(final Project project) {
-        project.getPluginManager().apply(ComponentModelBasePlugin);
+        project.getPluginManager().apply(ComponentModelBasePlugin)
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     static class Rules extends RuleSource {
         @ComponentType
         void registerLanguage(TypeBuilder<FortranSourceSet> builder) {
-            builder.defaultImplementation(DefaultFortranSourceSet);
-            builder.internalView(DependentSourceSetInternal);
-        }
+            builder.defaultImplementation(DefaultFortranSourceSet)
+            builder.internalView(DependentSourceSetInternal)
+		}
+		
+		@Finalize
+		void createFortranSourceSets(@Each NativeBinarySpec spec) {
+			spec.sources.create("fortran", FortranSourceSet)
+		}
 
         @Mutate
         void registerLanguageTransform(LanguageTransformContainer languages, ServiceRegistry serviceRegistry) {
-            languages.add(new Fortran());
+            languages.add(new Fortran())
         }
     }
 
@@ -70,16 +79,15 @@ class FortranLangPlugin implements Plugin<Project> {
         @Override
         public Map<String, Class<?>> getBinaryTools() {
             Map<String, Class<?>> tools = Maps.newLinkedHashMap();
-            tools.put("fortranCompiler", DefaultPreprocessingTool);
+            tools.put("cCompiler", DefaultPreprocessingTool);
             return tools;
         }
 
         @Override
         public String getLanguageName() {
-            return "fortran";
+            return "fortran";  
         }
 
-        // TODO ??
 		@Override
         public ToolType getToolType() {
             return ToolType.C_COMPILER;

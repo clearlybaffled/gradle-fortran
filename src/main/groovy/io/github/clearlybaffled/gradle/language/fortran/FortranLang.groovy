@@ -1,11 +1,25 @@
 package io.github.clearlybaffled.gradle.language.fortran
 
-import org.gradle.language.c.CSourceSet
+import org.gradle.api.file.SourceDirectorySet
+import org.gradle.language.cpp.CppSourceSet
 import org.gradle.language.cpp.internal.DefaultCppPlatform
-import org.gradle.language.nativeplatform.internal.AbstractHeaderExportingDependentSourceSet
+import org.gradle.language.cpp.internal.DefaultCppSourceSet
 
-interface FortranSourceSet extends CSourceSet {}
+interface FortranSourceSet extends CppSourceSet {}
 
-class DefaultFortranSourceSet extends AbstractHeaderExportingDependentSourceSet implements FortranSourceSet {}
+class DefaultFortranSourceSet extends DefaultCppSourceSet implements FortranSourceSet {
+
+	@Override
+	protected String getLanguageName() {
+		"Fortran"
+	}
+
+	@Override
+	public SourceDirectorySet getSource() {
+		super.source
+		     .srcDirs("src/main/fortran")
+		     .include("**/*.f")
+	}
+}
 
 class FortranPlatform extends DefaultCppPlatform {}
