@@ -19,7 +19,6 @@ public class FortranCompile extends AbstractNativeSourceCompileTask {
 
 	@Override
 	protected void configureSpec(NativeCompileSpec spec) {
-		FortranCompileSpec fSpec = (FortranCompileSpec) spec
-		fSpec
+		
 	}
 }

@@ -16,10 +16,19 @@ class DefaultFortranSourceSet extends DefaultCppSourceSet implements FortranSour
 
 	@Override
 	public SourceDirectorySet getSource() {
-		super.source
-		     .srcDirs("src/main/fortran")
-		     .include("**/*.f")
+		super.source.with { 
+		     srcDirs "src/main/fortran"
+		     include "**/*.f", "**/*.for"
+			 exclude "com*.f"
+		}
 	}
-}
 
-class FortranPlatform extends DefaultCppPlatform {}
+	@Override
+	public SourceDirectorySet getExportedHeaders() {
+		super.exportedHeaders.with {
+		     srcDirs "src/main/include"
+			 include "**/*.inc"
+		}   
+	}
+	
+}

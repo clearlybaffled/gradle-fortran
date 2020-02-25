@@ -1,14 +1,11 @@
 package io.github.clearlybaffled.gradle.language.fortran
 
-import org.apache.groovy.util.Maps
-import org.gradle.api.Action
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.internal.service.ServiceRegistry
 import org.gradle.language.base.internal.SourceTransformTaskConfig
 import org.gradle.language.base.internal.registry.LanguageTransformContainer
 import org.gradle.language.base.plugins.ComponentModelBasePlugin
-import org.gradle.language.javascript.JavaScriptSourceSet
 import org.gradle.language.nativeplatform.internal.DependentSourceSetInternal
 import org.gradle.language.nativeplatform.internal.NativeLanguageTransform
 import org.gradle.language.nativeplatform.internal.SourceCompileTaskConfig
@@ -23,6 +20,7 @@ import org.gradle.nativeplatform.toolchain.internal.ToolType
 import org.gradle.platform.base.ComponentType
 import org.gradle.platform.base.TypeBuilder
 
+import groovy.swing.factory.CollectionFactory
 import io.github.clearlybaffled.gradle.language.fortran.tasks.FortranCompile
 import io.github.clearlybaffled.gradle.nativeplatform.toolchain.FortranToolChains
 
@@ -73,29 +71,29 @@ class FortranLangPlugin implements Plugin<Project> {
     private static class Fortran extends NativeLanguageTransform<FortranSourceSet> {
         @Override
         public Class<FortranSourceSet> getSourceSetType() {
-            return FortranSourceSet;
+            FortranSourceSet
         }
 
         @Override
         public Map<String, Class<?>> getBinaryTools() {
-            Map<String, Class<?>> tools = Maps.newLinkedHashMap();
-            tools.put("cCompiler", DefaultPreprocessingTool);
-            return tools;
+            Map<String, Class<?>> tools = new LinkedHashMap<>()
+            tools.put("cppCompiler", DefaultPreprocessingTool)
+            Collections.unmodifiableMap(tools)
         }
 
         @Override
         public String getLanguageName() {
-            return "fortran";  
+            "fortran"  
         }
 
 		@Override
         public ToolType getToolType() {
-            return ToolType.C_COMPILER;
+            ToolType.CPP_COMPILER
         }
 
         @Override
         public SourceTransformTaskConfig getTransformTask() {
-            return new SourceCompileTaskConfig(this, FortranCompile);
+            new SourceCompileTaskConfig(this, FortranCompile)
         }
 
     }

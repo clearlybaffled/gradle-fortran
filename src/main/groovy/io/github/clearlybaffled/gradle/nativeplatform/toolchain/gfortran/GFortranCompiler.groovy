@@ -15,9 +15,9 @@ import org.gradle.nativeplatform.toolchain.internal.gcc.GccLinker
 
 import io.github.clearlybaffled.gradle.nativeplatform.toolchain.FortranCompileSpec
 
-class FortranCompiler extends GccCompatibleNativeCompiler<FortranCompileSpec> {
+class GFortranCompiler extends GccCompatibleNativeCompiler<FortranCompileSpec> {
 		
-	FortranCompiler(BuildOperationExecutor buildOperationExecutor, CompilerOutputFileNamingSchemeFactory compilerOutputFileNamingSchemeFactory, CommandLineToolInvocationWorker commandLineToolInvocationWorker, CommandLineToolContext invocationContext, String objectFileExtension, boolean useCommandFile, WorkerLeaseService workerLeaseService) {
+	GFortranCompiler(BuildOperationExecutor buildOperationExecutor, CompilerOutputFileNamingSchemeFactory compilerOutputFileNamingSchemeFactory, CommandLineToolInvocationWorker commandLineToolInvocationWorker, CommandLineToolContext invocationContext, String objectFileExtension, boolean useCommandFile, WorkerLeaseService workerLeaseService) {
 		super(buildOperationExecutor, compilerOutputFileNamingSchemeFactory, commandLineToolInvocationWorker, invocationContext, new GFortranCompileArgsTransformer(), Transformers.<FortranCompileSpec>noOpTransformer(), objectFileExtension, useCommandFile, workerLeaseService)
 	}
 
@@ -29,8 +29,10 @@ class FortranCompiler extends GccCompatibleNativeCompiler<FortranCompileSpec> {
 
 		@Override
 		protected void addToolSpecificArgs(FortranCompileSpec spec, List<String> args) {
-			// TODO Auto-generated method stub
 			super.addToolSpecificArgs(spec, args)
+			// TODO Auto-generated method stub
+			
+			
 		}
 	}
 }
