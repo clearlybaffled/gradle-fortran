@@ -7,7 +7,6 @@
 		<nature>org.eclipse.jdt.groovy.core.groovyNature</nature>
 		<nature>org.eclipse.jdt.core.javanature</nature>
 		<nature>org.eclipse.buildship.core.gradleprojectnature</nature>
-		<nature>org.eclipse.wst.common.project.facet.core.nature</nature>
 	</natures>
 	<buildSpec>
 		<buildCommand>
@@ -16,10 +15,6 @@
 		</buildCommand>
 		<buildCommand>
 			<name>org.eclipse.buildship.core.gradleprojectbuilder</name>
-			<arguments/>
-		</buildCommand>
-		<buildCommand>
-			<name>org.eclipse.wst.common.project.facet.core.builder</name>
 			<arguments/>
 		</buildCommand>
 	</buildSpec>

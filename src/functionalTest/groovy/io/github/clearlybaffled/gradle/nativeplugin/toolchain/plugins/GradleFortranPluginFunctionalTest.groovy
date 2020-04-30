@@ -3,33 +3,87 @@
  */
 package io.github.clearlybaffled.gradle.nativeplugin.toolchain.plugins
 
-import spock.lang.Specification
-import org.gradle.testkit.runner.GradleRunner
+import static org.hamcrest.CoreMatchers.is
+import static org.junit.Assert.*;
 
-/**
- * A simple functional test for the 'io.github.clearlybaffled.gradle-fortran-plugin.greeting' plugin.
- */
-public class GradleFortranPluginFunctionalTest extends Specification {
-    def "can run task"() {
-        given:
-        def projectDir = new File("build/functionalTest")
-        projectDir.mkdirs()
-        new File(projectDir, "settings.gradle") << ""
-        new File(projectDir, "build.gradle") << """
+import org.gradle.testkit.runner.GradleRunner
+import org.gradle.testkit.runner.TaskOutcome
+
+import groovy.swing.factory.CollectionFactory
+import groovy.swing.factory.EmptyBorderFactory
+import spock.lang.Specification
+
+
+class GradleFortranPluginFunctionalTest extends Specification {
+/*
+	@Rule TemporaryFolder testProjectDir = new TemporaryFolder()
+	File buildFile
+	File srcDir
+
+	def setup() {
+		buildFile = testProjectDir.newFile('build.gradle')
+		buildFile << """
             plugins {
-                id('io.github.clearlybaffled.gradle-fortran-plugin')
+                id 'io.github.clearlybaffled.fortran'
             }
+        """.stripIndent()
+		testProjectDir.newFolder("src","main","fortran")
+		testProjectDir.newFile("src/main/fortran/hello.f") << """
+			program hello
+			      print *, "Hello, World!"
+			end program hello
+		""".stripIndent()
+	
+	}
+	
+	
+    def "builds program"() {
+        given:
+		buildFile << """
+			model {
+				components {
+					test(NativeExecutableSpec)
+				}
+			}
         """
 
         when:
-        def runner = GradleRunner.create()
-        runner.forwardOutput()
-        runner.withPluginClasspath()
-        runner.withArguments("greeting")
-        runner.withProjectDir(projectDir)
-        def result = runner.build()
-
+	    def result = GradleRunner.create()
+        	.forwardOutput()
+	        .withPluginClasspath()
+	        .withArguments("--stacktrace", "--info", "build")
+			.withDebug(true)
+	        .withProjectDir(testProjectDir.root)
+			.build()
+		
+		
         then:
-        result.output.contains("Hello from plugin 'io.github.clearlybaffled.gradle-fortran-plugin.greeting'")
+        //result.task(":assemble").outcome == SUCCESS
+		//result.task(":build").outcome == SUCCESS
+		
+	
+		
+		assertTrue(new File("${testProjectDir.root.absolutePath}/build").exists())
     }
+	*/
+	def "builds from real filesystem"() {
+		given:
+		def runner = GradleRunner.create()
+			.forwardOutput()
+			.withPluginClasspath()
+			.withArguments("--stacktrace","--debug","clean","build")
+			.withDebug(true)
+			.withProjectDir(new File("src/test/resources/helloworld"))
+		when:
+		def result
+		try {
+			result = runner.build()
+		} catch (ex) {
+			println ex.message
+		}
+		then:
+		
+		assertTrue(result.tasks(TaskOutcome.FAILED).isEmpty())
+	}
+	
 }
