@@ -3,15 +3,14 @@
  */
 package io.github.clearlybaffled.gradle.nativeplugin.toolchain.plugins
 
-import static org.gradle.testkit.runner.TaskOutcome.*
+import static org.hamcrest.CoreMatchers.is
 import static org.junit.Assert.*;
 
-import org.gradle.api.tasks.SkipWhenEmpty
 import org.gradle.testkit.runner.GradleRunner
-import org.junit.Ignore
-import org.junit.Rule
-import org.junit.rules.TemporaryFolder
+import org.gradle.testkit.runner.TaskOutcome
 
+import groovy.swing.factory.CollectionFactory
+import groovy.swing.factory.EmptyBorderFactory
 import spock.lang.Specification
 
 
@@ -68,20 +67,23 @@ class GradleFortranPluginFunctionalTest extends Specification {
     }
 	*/
 	def "builds from real filesystem"() {
-		when:
-		try {
-		def result = GradleRunner.create()
+		given:
+		def runner = GradleRunner.create()
 			.forwardOutput()
 			.withPluginClasspath()
-			.withArguments("--stacktrace","--debug","build")
+			.withArguments("--stacktrace","--debug","clean","build")
 			.withDebug(true)
-			.withProjectDir(new File("../oaml/lfbltab")) //src/test/resources/helloworld"))
-			.build()
+			.withProjectDir(new File("src/test/resources/helloworld"))
+		when:
+		def result
+		try {
+			result = runner.build()
 		} catch (ex) {
 			println ex.message
 		}
 		then:
-		1
+		
+		assertTrue(result.tasks(TaskOutcome.FAILED).isEmpty())
 	}
 	
 }

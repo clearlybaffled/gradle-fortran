@@ -9,7 +9,7 @@ import spock.lang.Specification
 
 /**
  * A simple unit test for the 'io.github.clearlybaffled.gradle-fortran-plugin.greeting' plugin.
- */
+ 
 public class GradleFortranPluginTest extends Specification {
     def "plugin registers task"() {
         given:
@@ -22,3 +22,4 @@ public class GradleFortranPluginTest extends Specification {
         project.tasks.findByName("greeting") != null
     }
 }
+*/

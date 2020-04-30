@@ -17,8 +17,4 @@ public class FortranCompile extends AbstractNativeSourceCompileTask {
         return new DefaultFortranCompileSpec();
     }
 
-	@Override
-	protected void configureSpec(NativeCompileSpec spec) {
-		
-	}
 }

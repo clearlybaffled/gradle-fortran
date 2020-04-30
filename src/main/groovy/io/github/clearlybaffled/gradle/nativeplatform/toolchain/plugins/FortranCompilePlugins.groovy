@@ -21,10 +21,10 @@ import org.gradle.process.internal.ExecActionFactory
 import io.github.clearlybaffled.gradle.nativeplatform.toolchain.gfortran.GFortran
 import io.github.clearlybaffled.gradle.nativeplatform.toolchain.gfortran.GFortranToolChain
 
-class GFortranCompilePlugins implements Plugin<Project> {
+class GFortranCompilePlugin implements Plugin<Project> {
     @Override
     void apply(Project project) {
-        project.getPluginManager().apply(NativeComponentPlugin)
+        //project.getPluginManager().apply(NativeComponentPlugin)
     }
 
     static class Rules extends RuleSource {
@@ -49,4 +49,12 @@ class GFortranCompilePlugins implements Plugin<Project> {
         }
 
     }
+}
+
+class IFortranCompilePlugin implements Plugin<Project> {
+	void apply(Project project) {
+		
+	}
+	
+	
 }

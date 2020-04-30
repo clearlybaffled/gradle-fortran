@@ -17,6 +17,7 @@ import org.gradle.nativeplatform.NativeBinarySpec
 import org.gradle.nativeplatform.internal.DefaultPreprocessingTool
 import org.gradle.nativeplatform.plugins.NativeComponentModelPlugin
 import org.gradle.nativeplatform.toolchain.internal.ToolType
+import org.gradle.nativeplatform.toolchain.internal.plugins.StandardToolChainsPlugin
 import org.gradle.platform.base.ComponentType
 import org.gradle.platform.base.TypeBuilder
 
@@ -76,19 +77,17 @@ class FortranLangPlugin implements Plugin<Project> {
 
         @Override
         public Map<String, Class<?>> getBinaryTools() {
-            Map<String, Class<?>> tools = new LinkedHashMap<>()
-            tools.put("cppCompiler", DefaultPreprocessingTool)
-            Collections.unmodifiableMap(tools)
+            Collections.unmodifiableMap([cCompiler: DefaultPreprocessingTool])
         }
 
         @Override
         public String getLanguageName() {
-            "fortran"  
+            "none"  
         }
 
 		@Override
         public ToolType getToolType() {
-            ToolType.CPP_COMPILER
+            ToolType.C_COMPILER
         }
 
         @Override
