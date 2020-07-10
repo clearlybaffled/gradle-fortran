@@ -2,7 +2,9 @@ package io.github.clearlybaffled.gradle.language.fortran
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.Task
 import org.gradle.internal.service.ServiceRegistry
+import org.gradle.language.base.LanguageSourceSet
 import org.gradle.language.base.internal.SourceTransformTaskConfig
 import org.gradle.language.base.internal.registry.LanguageTransformContainer
 import org.gradle.language.base.plugins.ComponentModelBasePlugin
@@ -15,13 +17,13 @@ import org.gradle.model.Mutate
 import org.gradle.model.RuleSource
 import org.gradle.nativeplatform.NativeBinarySpec
 import org.gradle.nativeplatform.internal.DefaultPreprocessingTool
+import org.gradle.nativeplatform.internal.NativeBinarySpecInternal
 import org.gradle.nativeplatform.plugins.NativeComponentModelPlugin
 import org.gradle.nativeplatform.toolchain.internal.ToolType
-import org.gradle.nativeplatform.toolchain.internal.plugins.StandardToolChainsPlugin
+import org.gradle.platform.base.BinarySpec
 import org.gradle.platform.base.ComponentType
 import org.gradle.platform.base.TypeBuilder
 
-import groovy.swing.factory.CollectionFactory
 import io.github.clearlybaffled.gradle.language.fortran.tasks.FortranCompile
 import io.github.clearlybaffled.gradle.nativeplatform.toolchain.FortranToolChains
 
@@ -82,7 +84,7 @@ class FortranLangPlugin implements Plugin<Project> {
 
         @Override
         public String getLanguageName() {
-            "none"  
+            "fortran"  
         }
 
 		@Override
@@ -92,8 +94,27 @@ class FortranLangPlugin implements Plugin<Project> {
 
         @Override
         public SourceTransformTaskConfig getTransformTask() {
-            new SourceCompileTaskConfig(this, FortranCompile)
+            new FortranSourceCompileTaskConfig(this)
+            //new SourceCompileTaskConfig(this, FortranCompile)
         }
 
     }
+}
+
+class FortranSourceCompileTaskConfig extends SourceCompileTaskConfig {
+
+    public FortranSourceCompileTaskConfig(NativeLanguageTransform<FortranSourceSet> languageTransform) {
+        super(languageTransform, FortranCompile);
+    }
+
+    @Override
+    public void configureTask(Task task, BinarySpec binary, LanguageSourceSet sourceSet, ServiceRegistry serviceRegistry) {
+        def spec = (NativeBinarySpecInternal) binary
+        /*spec.setToolChain(toolChain)
+        spec.setPlatformToolProvider(toolProvider)*/
+        def configuredTask = super.configureTask(task, binary, sourceSet, serviceRegistry);
+    }
+    
+    
+    
 }

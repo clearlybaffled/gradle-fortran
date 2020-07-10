@@ -8,18 +8,17 @@ import org.gradle.api.Project
 import spock.lang.Specification
 
 /**
- * A simple unit test for the 'io.github.clearlybaffled.gradle-fortran-plugin.greeting' plugin.
- 
+ * A simple unit test for the 'io.github.clearlybaffled.fortran' plugin.
+*/ 
 public class GradleFortranPluginTest extends Specification {
     def "plugin registers task"() {
         given:
         def project = ProjectBuilder.builder().build()
 
         when:
-        project.plugins.apply("io.github.clearlybaffled.gradle-fortran-plugin.greeting")
+        project.plugins.apply("io.github.clearlybaffled.fortran")
 
         then:
-        project.tasks.findByName("greeting") != null
+        project.tasks.findByName("greeting") == null
     }
 }
-*/

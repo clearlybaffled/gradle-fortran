@@ -1,0 +1,10 @@
+plugins {
+    id 'io.github.clearlybaffled.fortran' version "1.0"
+}
+
+model {
+
+    components {
+        hello(NativeExecutableSpec)
+    }
+}
