@@ -1,0 +1,12 @@
+plugins {
+    id 'io.github.clearlybaffled.fortran' version "0.1"
+}
+
+model {
+    toolChains {
+        gfort(GFortran)
+    }
+    components {
+        hello(NativeExecutableSpec)
+    }
+}

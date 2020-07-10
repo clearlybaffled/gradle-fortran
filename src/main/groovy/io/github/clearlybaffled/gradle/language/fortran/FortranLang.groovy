@@ -12,22 +12,20 @@ class DefaultFortranSourceSet extends AbstractHeaderExportingDependentSourceSet 
 
 	@Override
 	protected String getLanguageName() {
-		"Fortran"
+		"fortran"
 	}
 
 	@Override
 	public SourceDirectorySet getSource() {
 		super.source.with { 
-		     srcDirs "src/main/fortran"
-		     include "**/*.f", "**/*.for"
-			 exclude "com*.f"
+		     include "**/*.f", "**/*.F", "**/*.f??", "**/*.F??"
+			 exclude "com*.f*"
 		}
 	}
 
 	@Override
 	public SourceDirectorySet getExportedHeaders() {
 		super.exportedHeaders.with {
-		     srcDirs "src/main/include"
 			 include "**/*.inc"
 		}   
 	}

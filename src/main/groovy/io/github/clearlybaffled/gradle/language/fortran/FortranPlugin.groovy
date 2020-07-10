@@ -2,7 +2,9 @@ package io.github.clearlybaffled.gradle.language.fortran
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.Task
 import org.gradle.internal.service.ServiceRegistry
+import org.gradle.language.base.LanguageSourceSet
 import org.gradle.language.base.internal.SourceTransformTaskConfig
 import org.gradle.language.base.internal.registry.LanguageTransformContainer
 import org.gradle.language.base.plugins.ComponentModelBasePlugin
@@ -15,15 +17,15 @@ import org.gradle.model.Mutate
 import org.gradle.model.RuleSource
 import org.gradle.nativeplatform.NativeBinarySpec
 import org.gradle.nativeplatform.internal.DefaultPreprocessingTool
+import org.gradle.nativeplatform.internal.NativeBinarySpecInternal
 import org.gradle.nativeplatform.plugins.NativeComponentModelPlugin
 import org.gradle.nativeplatform.toolchain.internal.ToolType
-import org.gradle.nativeplatform.toolchain.internal.plugins.StandardToolChainsPlugin
+import org.gradle.platform.base.BinarySpec
 import org.gradle.platform.base.ComponentType
 import org.gradle.platform.base.TypeBuilder
 
-import groovy.swing.factory.CollectionFactory
 import io.github.clearlybaffled.gradle.language.fortran.tasks.FortranCompile
-import io.github.clearlybaffled.gradle.nativeplatform.toolchain.FortranToolChains
+import io.github.clearlybaffled.gradle.nativeplatform.toolchain.plugins.FortranToolChains
 
 /**
  * A plugin for projects wishing to build native binary components from Fortran sources.
@@ -82,7 +84,7 @@ class FortranLangPlugin implements Plugin<Project> {
 
         @Override
         public String getLanguageName() {
-            "none"  
+            "fortran"  
         }
 
 		@Override
