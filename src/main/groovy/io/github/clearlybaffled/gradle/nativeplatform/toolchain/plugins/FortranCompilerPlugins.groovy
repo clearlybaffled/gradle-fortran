@@ -23,31 +23,63 @@ import org.gradle.nativeplatform.toolchain.internal.metadata.CompilerMetaDataPro
 import org.gradle.nativeplatform.toolchain.internal.plugins.StandardToolChainsPlugin
 import org.gradle.process.internal.ExecActionFactory
 
-import io.github.clearlybaffled.gradle.nativeplatform.toolchain.GFortran
+import io.github.clearlybaffled.gradle.nativeplatform.toolchain.GnuFortran
 import io.github.clearlybaffled.gradle.nativeplatform.toolchain.IntelFortran
-import io.github.clearlybaffled.gradle.nativeplatform.toolchain.internal.gcc.GFortranToolChain
+import io.github.clearlybaffled.gradle.nativeplatform.toolchain.internal.gcc.GnuFortranToolChain
 import io.github.clearlybaffled.gradle.nativeplatform.toolchain.internal.ifort.IntelFortranToolChain
 
 
 class FortranToolChains implements Plugin<Project> {
     @Override
     public void apply (Project project) {
-        project.getPluginManager().apply(FortranCompilerPlugin)
+        project.getPluginManager().apply(GnuFortranCompilerPlugin)
+        project.getPluginManager().apply(IntelFortranCompilerPlugin)
+        project.getPluginManager().apply(ConfigureFortranRules)
         project.getPluginManager().apply(StandardToolChainsPlugin)
     }
 }
 
 /**
- * A {@link Plugin} which makes the <a href="http://gcc.gnu.org/fortran/">GNU Fortran compiler</a> and 
- * <a href="https://software.intel.com/content/www/us/en/develop/tools/compilers/fortran-compilers.html">Intel Fortran Compiler</a>
- * available for compiling Fortran code.
+ * A {@link Plugin} which makes the <a href="http://gcc.gnu.org/fortran/">GNU Fortran compiler</a> available for compiling Fortran code.
  */
-class FortranCompilerPlugin implements Plugin<Project> {
+class GnuFortranCompilerPlugin implements Plugin<Project> {
     @Override
     void apply(Project project) {
         project.getPluginManager().apply(NativeComponentPlugin)
-        
-        project.ext.GFortran = GFortran
+
+        project.ext.GnuFortran = GnuFortran
+    }
+
+    static class Rules extends RuleSource {
+        @Defaults
+        public static void addToolChain(NativeToolChainRegistryInternal toolChainRegistry, ServiceRegistry serviceRegistry) {
+            final FileResolver fileResolver = serviceRegistry.get(FileResolver)
+            final ExecActionFactory execActionFactory = serviceRegistry.get(ExecActionFactory)
+            final CompilerOutputFileNamingSchemeFactory compilerOutputFileNamingSchemeFactory = serviceRegistry.get(CompilerOutputFileNamingSchemeFactory)
+            final Instantiator instantiator = serviceRegistry.get(Instantiator)
+            final BuildOperationExecutor buildOperationExecutor = serviceRegistry.get(BuildOperationExecutor)
+            final CompilerMetaDataProviderFactory metaDataProviderFactory = serviceRegistry.get(CompilerMetaDataProviderFactory)
+            final SystemLibraryDiscovery standardLibraryDiscovery = serviceRegistry.get(SystemLibraryDiscovery)
+            final WorkerLeaseService workerLeaseService = serviceRegistry.get(WorkerLeaseService)
+
+            toolChainRegistry.registerFactory(GnuFortran, new NamedDomainObjectFactory<GnuFortran>() {
+                        @Override
+                        public GnuFortran create(String name) {
+                            return instantiator.newInstance(GnuFortranToolChain, instantiator, name, buildOperationExecutor, OperatingSystem.current(), fileResolver, execActionFactory, compilerOutputFileNamingSchemeFactory, metaDataProviderFactory, standardLibraryDiscovery, workerLeaseService)
+                        }
+                    })
+            toolChainRegistry.registerDefaultToolChain(GnuFortranToolChain.DEFAULT_NAME, GnuFortran)
+        }
+    }
+}
+/**
+ * A {@link Plugin} which makes the <a href="https://software.intel.com/content/www/us/en/develop/tools/compilers/fortran-compilers.html">Intel Fortran Compiler</a> available for compiling Fortran code.
+ */
+class IntelFortranCompilerPlugin implements Plugin<Project> {
+    @Override
+    void apply(Project project) {
+        project.getPluginManager().apply(NativeComponentPlugin)
+
         project.ext.IntelFortran = IntelFortran
     }
 
@@ -63,67 +95,61 @@ class FortranCompilerPlugin implements Plugin<Project> {
             final SystemLibraryDiscovery standardLibraryDiscovery = serviceRegistry.get(SystemLibraryDiscovery)
             final WorkerLeaseService workerLeaseService = serviceRegistry.get(WorkerLeaseService)
 
-            toolChainRegistry.registerFactory(GFortran, new NamedDomainObjectFactory<GFortran>() {
-                @Override
-                public GFortran create(String name) {
-                    return instantiator.newInstance(GFortranToolChain, instantiator, name, buildOperationExecutor, OperatingSystem.current(), fileResolver, execActionFactory, compilerOutputFileNamingSchemeFactory, metaDataProviderFactory, standardLibraryDiscovery, workerLeaseService)
-                }
-            });
-            toolChainRegistry.registerDefaultToolChain(GFortranToolChain.DEFAULT_NAME, GFortran)
-            //toolChainRegistry.create(GFortranToolChain.DEFAULT_NAME, GFortran)
-            
+
             toolChainRegistry.registerFactory(IntelFortran, new NamedDomainObjectFactory<IntelFortran>() {
-                @Override
-                public IntelFortran create(String name) {
-                    return instantiator.newInstance(IntelFortranToolChain, instantiator, name, buildOperationExecutor, OperatingSystem.current(), fileResolver, execActionFactory, compilerOutputFileNamingSchemeFactory, metaDataProviderFactory, standardLibraryDiscovery, workerLeaseService)
-                }
-            });
+                        @Override
+                        public IntelFortran create(String name) {
+                            return instantiator.newInstance(IntelFortranToolChain, instantiator, name, buildOperationExecutor, OperatingSystem.current(), fileResolver, execActionFactory, compilerOutputFileNamingSchemeFactory, metaDataProviderFactory, standardLibraryDiscovery, workerLeaseService)
+                        }
+                    })
             toolChainRegistry.registerDefaultToolChain(IntelFortranToolChain.DEFAULT_NAME, IntelFortran)
         }
-        
-        @Mutate
-        void configureToolChains(NativeToolChainRegistryInternal toolChains) {
-            toolChains.withType(GFortran) {
-                eachPlatform {
-                    cCompiler.executable = "gfortran"
-                    cCompiler.withArguments { args ->
-                        def x = args.findIndexOf { '-x' }
-                        args.set(x+1, 'none')
-                    }
-                    linker.executable = "gfortran"
+    }
+}
+
+class ConfigureFortranRules extends RuleSource {
+    @Mutate
+    void configureToolChains(NativeToolChainRegistryInternal toolChains) {
+        toolChains.withType(GnuFortran) {
+            eachPlatform {
+                cCompiler.executable = "gfortran"
+                cCompiler.withArguments { args ->
+                    def x = args.findIndexOf { '-x' }
+                    args.set(x+1, 'none')
                 }
-            }
-            toolChains.withType(IntelFortran) {
-                eachPlatform {
-                    cCompiler.executable = "ifort"
-                    cCompiler.withArguments { args ->
-                        def x = args.findIndexOf { '-x' }
-                        args.remove(x+1)
-                        args.remove(x)
-                    }
-                    linker.executable = "ifort"
-                }
+                linker.executable = "gfortran"
             }
         }
-        
-        
-        @Finalize
-        static void configureBinaries(@Each NativeExecutableBinarySpecInternal binary) {
-            def platform = binary.targetPlatform
-            if (binary.toolChain in GFortran) {
-                binary.getcCompiler().define(binary.flavor.name + '_BUILD')
-                if (platform.operatingSystem.isWindows()) {
-                    binary.getcCompiler().define('WIN32')
-                } else if (platform.operatingSystem.isLinux()) {
-                    binary.getcCompiler().define('UNIX')
+        toolChains.withType(IntelFortran) {
+            eachPlatform {
+                cCompiler.executable = "ifort"
+                cCompiler.withArguments { args ->
+                    def x = args.findIndexOf { '-x' }
+                    args.remove(x+1)
+                    args.remove(x)
                 }
-                
-                binary.getcCompiler().define('GFORTRAN')
-                binary.getcCompiler().args('-cpp')
-            } else if (binary.toolChain in IntelFortran) {
-                if (!binary.getcCompiler().args.empty) {
-                    binary.getcCompiler().args("-march=core2","-Wall", "-ansi","-pendantic","-std=c99")
-                }
+                linker.executable = "ifort"
+            }
+        }
+    }
+
+
+    @Finalize
+    static void configureBinaries(@Each NativeExecutableBinarySpecInternal binary) {
+        def platform = binary.targetPlatform
+        if (binary.toolChain in GnuFortran) {
+            binary.getcCompiler().define(binary.flavor.name + '_BUILD')
+            if (platform.operatingSystem.isWindows()) {
+                binary.getcCompiler().define('WIN32')
+            } else if (platform.operatingSystem.isLinux()) {
+                binary.getcCompiler().define('UNIX')
+            }
+
+            binary.getcCompiler().define('GFORTRAN')
+            binary.getcCompiler().args('-cpp')
+        } else if (binary.toolChain in IntelFortran) {
+            if (!binary.getcCompiler().args.empty) {
+                binary.getcCompiler().args("-march=core2","-Wall", "-ansi","-pendantic","-std=c99")
             }
         }
     }

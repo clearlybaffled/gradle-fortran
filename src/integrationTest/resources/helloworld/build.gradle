@@ -1,10 +1,10 @@
 plugins {
-    id 'io.github.clearlybaffled.fortran' version "0.1"
+    id 'io.github.clearlybaffled.gradle.fortran' version "0.1"
 }
 
 model {
     toolChains {
-        gfort(GFortran)
+        gfort(GnuFortran)
     }
     components {
         hello(NativeExecutableSpec)

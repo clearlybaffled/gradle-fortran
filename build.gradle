@@ -2,16 +2,24 @@ plugins {
     id 'java-gradle-plugin'
     id 'groovy'
     id 'eclipse'
-	id 'jacoco'
+    id 'jacoco'
     id 'maven-publish'
 }
 
 repositories {
     mavenCentral()
+    jcenter()
 }
 
 group = "io.github.clearlybaffled"
-version = '0.1'
+version = '0.1-SNAPSHOT'
+
+// Add a source set for the integration test suite
+configurations {
+    integrationTestImplementation {
+        extendsFrom(configurations.testImplementation)
+    }
+}
 
 sourceSets {
    integrationTest {
@@ -21,7 +29,8 @@ sourceSets {
       runtimeClasspath += output + compileClasspath
    }
 
-  }
+}
+
 dependencies {
 
     testCompile 'org.spockframework:spock-core:1.3-groovy-2.5'
@@ -29,26 +38,21 @@ dependencies {
     testImplementation 'org.hamcrest:hamcrest:2.2'
     testImplementation 'org.hamcrest:hamcrest-library:2.2'
 
-
     testImplementation gradleTestKit()
     testImplementation ('junit:junit:4.12') {
         exclude module: "hamcrest"
     }
     testImplementation "commons-io:commons-io:2.7"
-    //testImplementation "org.apache.commons:commons-lang3:3.11"
 
     integrationTestImplementation('org.spockframework:spock-core:1.3-groovy-2.5') {
         exclude module: 'groovy-all'
     }
 }
 
-// Testing
-test {
-    finalizedBy jacocoTestReport
+task sourcesJar(type: Jar) {
+  from sourceSets.main.allSource
+  archiveClassifier = "sources"
 }
-
-// Add a source set for the integration test suite
-configurations.integrationTestImplementation.extendsFrom(configurations.testImplementation)
 
 // Add a task to run the integration tests
 task integrationTest(type: Test) {
@@ -64,22 +68,39 @@ check.dependsOn(tasks.integrationTest)
 
 // Reports and Docs
 jacocoTestReport {
-    dependsOn integrationTest
+    dependsOn test, integrationTest
+    sourceSets sourceSets.main
+    
     reports {
-        xml.enabled false
+        xml.enabled true
         csv.enabled false
-        //html.destination file("${buildDir}/jacocoHtml")
     }
+}
+
+tasks.withType(Test) {
+    finalizedBy jacocoTestReport
+}
+
+task totalCoverage(type: JacocoMerge) {
+    executionData file("${project.buildDir}/jacoco/test.exec"), file("${project.buildDir}/jacoco/integrationTest.exec")
+    
+}
+
+task jacocoCombinedReport(type: JacocoReport) {
+    dependsOn totalCoverage
+    executionData file("$buildDir/jacoco/totalCoverage.exec")
+    sourceSets sourceSets.main
 }
 
 groovydoc {
     exclude "**/internal/**"
 }
 
-task jacocoReport(type: JacocoReport) {
-    sourceSets sourceSets.main
-    executionData fileTree(project.buildDir.absolutePath).include("${buildDir}/jacoco/*.exec")
+task groovydocJar(type: Jar, dependsOn: groovydoc) {
+    classifier 'javadoc'
+    from groovydoc.destinationDir
 }
+
 
 // Plugin Spec
 gradlePlugin {
@@ -91,15 +112,20 @@ gradlePlugin {
        }
     }
     testSourceSets sourceSets.integrationTest
- }
+}
 
  // Publishing
 publishing {
     repositories {
         mavenLocal()
     }
+    publications {
+        pluginMaven(MavenPublication) {
+            artifact sourcesJar
+            artifact groovydocJar
+        }
+    }
 }
-
 
 // Local Development hack for eclipse to link sources to classes in gradle-api
 wrapper {

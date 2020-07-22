@@ -1,51 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry output="bin/main" kind="src" path="src/main/groovy">
+	<classpathentry kind="src" output="bin/main" path="src/main/groovy">
 		<attributes>
 			<attribute name="gradle_scope" value="main"/>
-			<attribute name="gradle_used_by_scope" value="main,test,functionalTest"/>
+			<attribute name="gradle_used_by_scope" value="main,test,integrationTest"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry output="bin/main" kind="src" path="src/main/resources">
-		<attributes>
-			<attribute name="gradle_scope" value="main"/>
-			<attribute name="gradle_used_by_scope" value="main,test,functionalTest"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry output="bin/test" kind="src" path="src/test/groovy">
+	<classpathentry kind="src" output="bin/test" path="src/test/groovy">
 		<attributes>
 			<attribute name="gradle_scope" value="test"/>
 			<attribute name="gradle_used_by_scope" value="test"/>
 			<attribute name="test" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry output="bin/functionalTest" kind="src" path="src/test/resources">
+	<classpathentry kind="src" output="bin/integrationTest" path="src/integrationTest/groovy">
 		<attributes>
-			<attribute name="gradle_scope" value="functionalTest"/>
-			<attribute name="gradle_used_by_scope" value="functionalTest"/>
+			<attribute name="gradle_scope" value="integrationTest"/>
+			<attribute name="gradle_used_by_scope" value="integrationTest"/>
 			<attribute name="test" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry output="bin/functionalTest" kind="src" path="src/functionalTest/groovy">
+	<classpathentry kind="src" output="bin/integrationTest" path="src/integrationTest/resources">
 		<attributes>
-			<attribute name="gradle_scope" value="functionalTest"/>
-			<attribute name="gradle_used_by_scope" value="functionalTest"/>
+			<attribute name="gradle_scope" value="integrationTest"/>
+			<attribute name="gradle_used_by_scope" value="integrationTest"/>
 			<attribute name="test" value="true"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="src" output="bin/main" path="src/main/resources">
+		<attributes>
+			<attribute name="gradle_scope" value="main"/>
+			<attribute name="gradle_used_by_scope" value="main,test,integrationTest"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-11/"/>
 	<classpathentry kind="con" path="org.eclipse.buildship.core.gradleclasspathcontainer"/>
 	<classpathentry kind="output" path="bin/default"/>
-	<classpathentry output="bin/test" kind="src" path="src/test/resources">
-		<attributes>
-			<attribute name="gradle_scope" value="test"/>
-			<attribute name="gradle_used_by_scope" value="test"/>
-			<attribute name="test" value="true"/>
-		</attributes>
-	</classpathentry>
-<classpathentry sourcepath="/home/jared/.gradle/wrapper/dists/gradle-6.1.1-all/cfmwm155h49vnt3hynmlrsdst/gradle-6.1.1/src" kind="lib" path="/home/jared/.gradle/caches/6.1.1/generated-gradle-jars/gradle-test-kit-6.1.1.jar">
-		<attributes>
-			<attribute name="gradle_used_by_scope" value="functionalTest,test"/>
-			<attribute name="test" value="true"/>
-		</attributes>
-	</classpathentry>
 </classpath>

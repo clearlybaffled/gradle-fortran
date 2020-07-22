@@ -18,7 +18,7 @@ abstract class AbstractNativeLanguageIntegrationTest extends AbstractIntegration
         buildFile << """
 model {
 	toolChains {
-		gfort(GFortran)
+		gfort(GnuFortran)
 	}
     components {
         main(NativeExecutableSpec)
@@ -42,7 +42,7 @@ model {
         buildFile << """
 model {
 	toolChains {
-		gfort(GFortran)
+		gfort(GnuFortran)
 	}
     components {
         main(NativeExecutableSpec) {
@@ -70,7 +70,7 @@ model {
         buildFile << """
 model {
 	toolChains {
-		gfort(GFortran)
+		gfort(GnuFortran)
 	}
     components {
         main(NativeExecutableSpec) {

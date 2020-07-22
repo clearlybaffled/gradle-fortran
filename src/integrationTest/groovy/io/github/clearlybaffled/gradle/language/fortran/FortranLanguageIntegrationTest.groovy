@@ -21,7 +21,7 @@ class FortranLanguageIntegrationTest extends AbstractNativeLanguageIntegrationTe
 		buildFile << """
             model {
 				toolChains {
-					gfort(GFortran)
+					gfort(GnuFortran)
 				}
                 components {
                     main(NativeExecutableSpec)
