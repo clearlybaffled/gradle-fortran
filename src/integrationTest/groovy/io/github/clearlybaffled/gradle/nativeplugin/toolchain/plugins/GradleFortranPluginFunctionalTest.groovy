@@ -6,12 +6,13 @@ import static org.hamcrest.Matchers.*;
 
 import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 
 import spock.lang.Specification
 
-
+@Ignore
 class GradleFortranPluginFunctionalTest extends Specification {
 
 	@Rule TemporaryFolder testProjectDir = new TemporaryFolder()

@@ -33,7 +33,7 @@ import io.github.clearlybaffled.gradle.nativeplatform.toolchain.plugins.FortranT
  * <p>Automatically includes the {@link org.gradle.nativeplatform.plugins.NativeComponentPlugin} for native component support.</p>
  *
  * <ul>
- * <li>Creates a {@link io.github.clearlybaffled.gradle.language.fortran.tasks.FortranCompile} task for each {@link io.github.clearlybaffled.gradle.language.fortran.FortranSourceSet} to compile the C sources.</li>
+ * <li>Creates a {@link io.github.clearlybaffled.gradle.language.fortran.tasks.FortranCompile} task for each {@link io.github.clearlybaffled.gradle.language.fortran.FortranSourceSet} to compile the Fortran sources.</li>
  * </ul>
  */
 class FortranPlugin implements Plugin<Project> {
@@ -45,7 +45,9 @@ class FortranPlugin implements Plugin<Project> {
     }
 }
 
-
+/**
+ *  Adds core Fortran language support.
+ */
 class FortranLangPlugin implements Plugin<Project> {
 
     @Override
@@ -77,6 +79,9 @@ class FortranLangPlugin implements Plugin<Project> {
             FortranSourceSet
         }
 
+        /**
+         * Because {@link org.gradle.nativeplatform.NativeBinarySpec} only sets up methods for a fixed set of native tools, I picked the most logical one to use for the Fortran compiler
+         */
         @Override
         public Map<String, Class<?>> getBinaryTools() {
             Collections.unmodifiableMap([cCompiler: DefaultPreprocessingTool])
@@ -87,6 +92,9 @@ class FortranLangPlugin implements Plugin<Project> {
             "fortran"  
         }
 
+        /**
+         * Because {@link org.gradle.nativeplatform.toolchain.internal.ToolType} is an enum, only certain types of tools are distinguished. I picked the most logical one consistent with {@link getBinaryTools()} 
+         */
 		@Override
         public ToolType getToolType() {
             ToolType.C_COMPILER

@@ -9,7 +9,6 @@ import org.gradle.internal.os.OperatingSystem
 import org.gradle.internal.reflect.Instantiator
 import org.gradle.internal.service.ServiceRegistry
 import org.gradle.internal.work.WorkerLeaseService
-import org.gradle.language.nativeplatform.internal.AbstractNativeCompileSpec
 import org.gradle.model.Defaults
 import org.gradle.model.Each
 import org.gradle.model.Finalize
@@ -18,14 +17,16 @@ import org.gradle.model.RuleSource
 import org.gradle.nativeplatform.internal.CompilerOutputFileNamingSchemeFactory
 import org.gradle.nativeplatform.internal.NativeExecutableBinarySpecInternal
 import org.gradle.nativeplatform.plugins.NativeComponentPlugin
-import org.gradle.nativeplatform.toolchain.Gcc
 import org.gradle.nativeplatform.toolchain.internal.NativeToolChainRegistryInternal
-import org.gradle.nativeplatform.toolchain.internal.compilespec.CCompileSpec
-import org.gradle.nativeplatform.toolchain.internal.gcc.GccToolChain
 import org.gradle.nativeplatform.toolchain.internal.gcc.metadata.SystemLibraryDiscovery
 import org.gradle.nativeplatform.toolchain.internal.metadata.CompilerMetaDataProviderFactory
 import org.gradle.nativeplatform.toolchain.internal.plugins.StandardToolChainsPlugin
 import org.gradle.process.internal.ExecActionFactory
+
+import io.github.clearlybaffled.gradle.nativeplatform.toolchain.GFortran
+import io.github.clearlybaffled.gradle.nativeplatform.toolchain.IntelFortran
+import io.github.clearlybaffled.gradle.nativeplatform.toolchain.internal.gcc.GFortranToolChain
+import io.github.clearlybaffled.gradle.nativeplatform.toolchain.internal.ifort.IntelFortranToolChain
 
 
 class FortranToolChains implements Plugin<Project> {
@@ -36,7 +37,11 @@ class FortranToolChains implements Plugin<Project> {
     }
 }
 
-
+/**
+ * A {@link Plugin} which makes the <a href="http://gcc.gnu.org/fortran/">GNU Fortran compiler</a> and 
+ * <a href="https://software.intel.com/content/www/us/en/develop/tools/compilers/fortran-compilers.html">Intel Fortran Compiler</a>
+ * available for compiling Fortran code.
+ */
 class FortranCompilerPlugin implements Plugin<Project> {
     @Override
     void apply(Project project) {
@@ -124,39 +129,4 @@ class FortranCompilerPlugin implements Plugin<Project> {
     }
 }
 
-interface FortranCompileSpec extends CCompileSpec {}
 
-class DefaultFortranCompileSpec extends AbstractNativeCompileSpec implements FortranCompileSpec {}
-
-interface GFortran extends Gcc {}
-
-public class GFortranToolChain extends GccToolChain implements GFortran {
-    public static final String DEFAULT_NAME = "gfortran"    
-
-
-    public GFortranToolChain(Instantiator instantiator, String name, BuildOperationExecutor buildOperationExecutor,
-            OperatingSystem operatingSystem, FileResolver fileResolver, ExecActionFactory execActionFactory,
-            CompilerOutputFileNamingSchemeFactory compilerOutputFileNamingSchemeFactory,
-            CompilerMetaDataProviderFactory metaDataProviderFactory, SystemLibraryDiscovery standardLibraryDiscovery,
-            WorkerLeaseService workerLeaseService) {
-        super(instantiator, name, buildOperationExecutor, operatingSystem, fileResolver, execActionFactory,
-                compilerOutputFileNamingSchemeFactory, metaDataProviderFactory, standardLibraryDiscovery, workerLeaseService)
-    }    
-}
-
-interface IntelFortran extends Gcc {}
-
-public class IntelFortranToolChain extends GccToolChain implements IntelFortran {
-    public static final String DEFAULT_NAME = "ifort"
-
-
-    public IntelFortranToolChain(Instantiator instantiator, String name, BuildOperationExecutor buildOperationExecutor,
-            OperatingSystem operatingSystem, FileResolver fileResolver, ExecActionFactory execActionFactory,
-            CompilerOutputFileNamingSchemeFactory compilerOutputFileNamingSchemeFactory,
-            CompilerMetaDataProviderFactory metaDataProviderFactory, SystemLibraryDiscovery standardLibraryDiscovery,
-            WorkerLeaseService workerLeaseService) {
-        super(instantiator, name, buildOperationExecutor, operatingSystem, fileResolver, execActionFactory,
-                compilerOutputFileNamingSchemeFactory, metaDataProviderFactory, standardLibraryDiscovery, workerLeaseService)
-    }    
-    
-}
