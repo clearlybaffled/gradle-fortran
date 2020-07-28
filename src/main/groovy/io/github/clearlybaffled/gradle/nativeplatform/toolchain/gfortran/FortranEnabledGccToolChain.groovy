@@ -1,7 +1,6 @@
 package io.github.clearlybaffled.gradle.nativeplatform.toolchain.gfortran
 
-import static org.gradle.nativeplatform.toolchain.internal.NativeLanguage.*
-
+import org.gradle.api.Action
 import org.gradle.api.internal.file.FileResolver
 import org.gradle.internal.operations.BuildOperationExecutor
 import org.gradle.internal.os.OperatingSystem
@@ -11,12 +10,13 @@ import org.gradle.nativeplatform.internal.CompilerOutputFileNamingSchemeFactory
 import org.gradle.nativeplatform.platform.NativePlatform
 import org.gradle.nativeplatform.platform.internal.NativePlatformInternal
 import org.gradle.nativeplatform.toolchain.Gcc
+import org.gradle.nativeplatform.toolchain.GccPlatformToolChain
 import org.gradle.nativeplatform.toolchain.internal.NativeLanguage
 import org.gradle.nativeplatform.toolchain.internal.PlatformToolProvider
-import org.gradle.nativeplatform.toolchain.internal.SymbolExtractorOsConfig
 import org.gradle.nativeplatform.toolchain.internal.ToolType
 import org.gradle.nativeplatform.toolchain.internal.UnavailablePlatformToolProvider
 import org.gradle.nativeplatform.toolchain.internal.UnsupportedPlatformToolProvider
+import org.gradle.nativeplatform.toolchain.internal.gcc.AbstractGccCompatibleToolChain
 import org.gradle.nativeplatform.toolchain.internal.gcc.DefaultGccPlatformToolChain
 import org.gradle.nativeplatform.toolchain.internal.gcc.GccToolChain
 import org.gradle.nativeplatform.toolchain.internal.gcc.TargetPlatformConfiguration
@@ -37,7 +37,7 @@ interface GFortran extends Gcc {}
 /*
  * Adds Fortran as a language option to Gcc toolchain
  */
-public class GFortranToolChain extends GccToolChain implements GFortran {
+public class FortranEnabledGccToolChain extends GccToolChain implements Gcc {
 
     public static final String DEFAULT_NAME = "gfortran"
     private final List<TargetPlatformConfiguration> platformConfigs = []
@@ -48,9 +48,9 @@ public class GFortranToolChain extends GccToolChain implements GFortran {
     private final ExecActionFactory execActionFactory
     private final WorkerLeaseService workerLeaseService
     private final CompilerOutputFileNamingSchemeFactory compilerOutputFileNamingSchemeFactory
+    private final AbstractGccCompatibleToolChain delegate
 
-
-    public GFortranToolChain(Instantiator instantiator, String name, BuildOperationExecutor buildOperationExecutor, OperatingSystem operatingSystem, FileResolver fileResolver, ExecActionFactory execActionFactory, CompilerOutputFileNamingSchemeFactory compilerOutputFileNamingSchemeFactory, CompilerMetaDataProviderFactory metaDataProviderFactory, SystemLibraryDiscovery standardLibraryDiscovery, WorkerLeaseService workerLeaseService) {
+    public FortranEnabledGccToolChain(GccToolChain delegate, Instantiator instantiator, String name, BuildOperationExecutor buildOperationExecutor, OperatingSystem operatingSystem, FileResolver fileResolver, ExecActionFactory execActionFactory, CompilerOutputFileNamingSchemeFactory compilerOutputFileNamingSchemeFactory, CompilerMetaDataProviderFactory metaDataProviderFactory, SystemLibraryDiscovery standardLibraryDiscovery, WorkerLeaseService workerLeaseService) {
         super(instantiator, name, buildOperationExecutor, operatingSystem, fileResolver, execActionFactory,
                 compilerOutputFileNamingSchemeFactory, metaDataProviderFactory, standardLibraryDiscovery, workerLeaseService)
         this.platformConfigs = platformConfigs
@@ -60,46 +60,43 @@ public class GFortranToolChain extends GccToolChain implements GFortran {
         this.execActionFactory = execActionFactory
         this.workerLeaseService = workerLeaseService
         this.compilerOutputFileNamingSchemeFactory = compilerOutputFileNamingSchemeFactory
+        this.delegate = delegate ?: this
 
-        target("linux-x86_64")
+        //target("linux-x86_64")
     }
 
     @Override
-    protected void configureDefaultTools(DefaultGccPlatformToolChain toolChain) {
-        toolChain.add(instantiator.newInstance(DefaultGccCommandLineToolConfiguration, ToolType.C_COMPILER, "gfortran"))
-        toolChain.add(instantiator.newInstance(DefaultGccCommandLineToolConfiguration, ToolType.LINKER, "gfortran"))
-        toolChain.add(instantiator.newInstance(DefaultGccCommandLineToolConfiguration, ToolType.STATIC_LIB_ARCHIVER, "ar"))
-        toolChain.add(instantiator.newInstance(DefaultGccCommandLineToolConfiguration, ToolType.SYMBOL_EXTRACTOR, SymbolExtractorOsConfig.current().getExecutableName()))
-        toolChain.add(instantiator.newInstance(DefaultGccCommandLineToolConfiguration, ToolType.STRIPPER, "strip"))
-
+    public PlatformToolProvider select(NativePlatformInternal targetMachine) {
+        select(NativeLanguage.ANY, targetMachine)
     }
-
+    
     @Override
     public PlatformToolProvider select(NativeLanguage sourceLanguage, NativePlatformInternal targetMachine) {
-        if (sourceLanguage == NativeLanguage.ANY) {
-            def toolProvider = toolProviders.get(targetMachine)
-            if (!toolProvider) {
-                toolProvider = createPlatformToolProvider(targetMachine)
-                toolProviders.put(targetMachine, toolProvider)
-            }
-            def compiler = toolProvider.locateTool(ToolType.C_COMPILER)
+        if (sourceLanguage == NativeLanguage.FORTRAN) {
+            def toolProvider = delegate.select(targetMachine)
+
+            def compiler = toolProvider.locateTool(ToolType.FORTRAN_COMPILER)
             if (compiler?.isAvailable()) {
-                toolProvider
+                def decoratedToolProvider = createPlatformToolProvider(targetMachine, toolProvider)
+                delegate.@toolProviders.put(targetMachine, decoratedToolProvider)
+                decoratedToolProvider
             } else {
-                new UnavailablePlatformToolProvider(targetMachine.getOperatingSystem(), compiler)
+                toolProvider
             }
         } else {
-            new UnsupportedPlatformToolProvider(targetMachine.operatingSystem, String.format("Don't know how to compile language %s.", sourceLanguage))
+            delegate.select(sourceLanguage, targetMachine)
         }
     }
 
-    private PlatformToolProvider createPlatformToolProvider(NativePlatformInternal targetPlatform) {
+    private PlatformToolProvider createPlatformToolProvider(NativePlatformInternal targetPlatform, PlatformToolProvider toolProvider) {
         TargetPlatformConfiguration targetPlatformConfigurationConfiguration = getPlatformConfiguration(targetPlatform)
         if (targetPlatformConfigurationConfiguration) {
             DefaultGccPlatformToolChain configurableToolChain = instantiator.newInstance(GFortranPlatformToolChain, targetPlatform)
+            configurableToolChain.add(instantiator.newInstance(DefaultGccCommandLineToolConfiguration.class, ToolType.FORTRAN_COMPILER, "gcc"))
             configureDefaultTools(configurableToolChain)
             targetPlatformConfigurationConfiguration.apply(configurableToolChain)
             configureActions.execute(configurableToolChain)
+            configurableToolChain.compilerProbeArgs("-x f77", "-cpp")
             configurableToolChain.compilerProbeArgs(standardLibraryDiscovery.compilerProbeArgs(targetPlatform))
 
             ToolChainAvailability result = new ToolChainAvailability()
@@ -108,11 +105,55 @@ public class GFortranToolChain extends GccToolChain implements GFortran {
             if (!result.isAvailable()) {
                  new UnavailablePlatformToolProvider(targetPlatform.operatingSystem, result)
             } else {
-                new GFortranPlatformToolProvider(buildOperationExecutor, targetPlatform.operatingSystem, toolSearchPath, configurableToolChain, execActionFactory, compilerOutputFileNamingSchemeFactory, configurableToolChain.canUseCommandFile, workerLeaseService, new CompilerMetaDataProviderWithDefaultArgs(configurableToolChain.getCompilerProbeArgs(), metaDataProvider))
+                new FortranEnabledGccPlatformToolProvider(toolProvider, buildOperationExecutor, targetPlatform.operatingSystem, toolSearchPath, configurableToolChain, execActionFactory, compilerOutputFileNamingSchemeFactory, configurableToolChain.canUseCommandFile, workerLeaseService, new CompilerMetaDataProviderWithDefaultArgs(configurableToolChain.getCompilerProbeArgs(), metaDataProvider))
             }
         } else {
             new UnsupportedPlatformToolProvider(targetPlatform.operatingSystem, String.format("Don't know how to build for %s.", targetPlatform.displayName))
         }
+    }
+
+    public String getName() {
+         delegate.getName()
+    }
+
+    public String getDisplayName() {
+         delegate.getDisplayName()
+    }
+
+    public String getOutputType() {
+         delegate.getOutputType()
+    }
+
+    public void eachPlatform(Action<? super GccPlatformToolChain> action) {
+        delegate.eachPlatform(action)
+    }
+
+    public void assertSupported() {
+        delegate.assertSupported()
+    }
+
+    public List<File> getPath() {
+         delegate.getPath()
+    }
+
+    public void path(Object... pathEntries) {
+        delegate.path(pathEntries)
+    }
+
+    public void target(String platformName) {
+        delegate.target(platformName)
+    }
+
+    public void target(String platformName, Action<? super GccPlatformToolChain> action) {
+        delegate.target(platformName, action)
+    }
+
+    public void target(List<String> platformNames, Action<? super GccPlatformToolChain> action) {
+        delegate.target(platformNames, action)
+    }
+
+    public void setTargets(String... platformNames) {
+        delegate.setTargets(platformNames)
     }
 
 
@@ -120,39 +161,18 @@ public class GFortranToolChain extends GccToolChain implements GFortran {
 
 class GFortranPlatformToolChain extends DefaultGccPlatformToolChain {
 
-    def dummy
     public GFortranPlatformToolChain(NativePlatform platform) {
         super(platform)
-        this.dummy = new DefaultGccCommandLineToolConfiguration(ToolType.LINKER, "/bin/true")
     }
 
     @Override
     public Collection<GccCommandLineToolConfigurationInternal> getCompilers() {
-        [getcCompiler()]
+        [fortranCompiler]
     }
 
-    public GccCommandLineToolConfigurationInternal getCompiler() {
-        getcCompiler()
+    public GccCommandLineToolConfigurationInternal getFortranCompiler() {
+        super.metaClass.@tools.get(ToolType.FORTRAN_COMPILER);
     }
-
-    @Override
-    public GccCommandLineToolConfigurationInternal getCppCompiler() {
-        dummy
-    }
-    @Override
-    public GccCommandLineToolConfigurationInternal getObjcCompiler() {
-        dummy
-    }
-    @Override
-    public GccCommandLineToolConfigurationInternal getObjcppCompiler() {
-        dummy
-    }
-
-    @Override
-    public GccCommandLineToolConfigurationInternal getAssembler() {
-        dummy
-    }
-
-
+    
 }
 

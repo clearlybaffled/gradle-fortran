@@ -4,17 +4,22 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.language.nativeplatform.internal.AbstractNativeCompileSpec
 import org.gradle.nativeplatform.toolchain.internal.NativeCompileSpec
+import org.gradle.nativeplatform.toolchain.internal.ToolType
 import org.gradle.nativeplatform.toolchain.internal.plugins.StandardToolChainsPlugin
 
-import io.github.clearlybaffled.gradle.nativeplatform.toolchain.plugins.GFortranCompilePlugin
+import io.github.clearlybaffled.gradle.internal.EnumHelper
+import io.github.clearlybaffled.gradle.nativeplatform.toolchain.plugins.FortranCompilerPlugin
 
 
 class FortranToolChains implements Plugin<Project> {
 	@Override
 	public void apply (Project project) {
-		project.getPluginManager().apply(GFortranCompilePlugin)
+		 EnumHelper.addEntry(ToolType, "FORTRAN_COMPILER", "Fortran Compiler")
+         project.getPluginManager().apply(FortranCompilerPlugin)
 		//project.getPluginManager().apply(IFortranCompilePlugin)
 		project.getPluginManager().apply(StandardToolChainsPlugin)
+        
+       
 	}
 }
 
