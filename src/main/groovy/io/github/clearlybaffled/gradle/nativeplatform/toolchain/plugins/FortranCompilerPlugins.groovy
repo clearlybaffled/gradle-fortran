@@ -18,6 +18,7 @@ import org.gradle.nativeplatform.internal.CompilerOutputFileNamingSchemeFactory
 import org.gradle.nativeplatform.internal.NativeExecutableBinarySpecInternal
 import org.gradle.nativeplatform.plugins.NativeComponentPlugin
 import org.gradle.nativeplatform.toolchain.internal.NativeToolChainRegistryInternal
+import org.gradle.nativeplatform.toolchain.internal.gcc.GccToolChain
 import org.gradle.nativeplatform.toolchain.internal.gcc.metadata.SystemLibraryDiscovery
 import org.gradle.nativeplatform.toolchain.internal.metadata.CompilerMetaDataProviderFactory
 import org.gradle.nativeplatform.toolchain.internal.plugins.StandardToolChainsPlugin
@@ -25,6 +26,7 @@ import org.gradle.process.internal.ExecActionFactory
 
 import io.github.clearlybaffled.gradle.nativeplatform.toolchain.GnuFortran
 import io.github.clearlybaffled.gradle.nativeplatform.toolchain.IntelFortran
+import io.github.clearlybaffled.gradle.nativeplatform.toolchain.internal.gcc.FortranEnabledGccToolChain
 import io.github.clearlybaffled.gradle.nativeplatform.toolchain.internal.gcc.GnuFortranToolChain
 import io.github.clearlybaffled.gradle.nativeplatform.toolchain.internal.ifort.IntelFortranToolChain
 
@@ -32,10 +34,11 @@ import io.github.clearlybaffled.gradle.nativeplatform.toolchain.internal.ifort.I
 class FortranToolChains implements Plugin<Project> {
     @Override
     public void apply (Project project) {
+        project.getPluginManager().apply(StandardToolChainsPlugin)
         project.getPluginManager().apply(GnuFortranCompilerPlugin)
         project.getPluginManager().apply(IntelFortranCompilerPlugin)
-        project.getPluginManager().apply(ConfigureFortranRules)
-        project.getPluginManager().apply(StandardToolChainsPlugin)
+        //project.getPluginManager().apply(ConfigureFortranRules)
+        
     }
 }
 
@@ -65,10 +68,10 @@ class GnuFortranCompilerPlugin implements Plugin<Project> {
             toolChainRegistry.registerFactory(GnuFortran, new NamedDomainObjectFactory<GnuFortran>() {
                         @Override
                         public GnuFortran create(String name) {
-                            return instantiator.newInstance(GnuFortranToolChain, instantiator, name, buildOperationExecutor, OperatingSystem.current(), fileResolver, execActionFactory, compilerOutputFileNamingSchemeFactory, metaDataProviderFactory, standardLibraryDiscovery, workerLeaseService)
+                            return instantiator.newInstance(FortranEnabledGccToolChain, instantiator, name, buildOperationExecutor, OperatingSystem.current(), fileResolver, execActionFactory, compilerOutputFileNamingSchemeFactory, metaDataProviderFactory, standardLibraryDiscovery, workerLeaseService)
                         }
                     })
-            toolChainRegistry.registerDefaultToolChain(GnuFortranToolChain.DEFAULT_NAME, GnuFortran)
+            toolChainRegistry.registerDefaultToolChain(FortranEnabledGccToolChain.DEFAULT_NAME, GnuFortran)
         }
     }
 }
@@ -106,7 +109,7 @@ class IntelFortranCompilerPlugin implements Plugin<Project> {
         }
     }
 }
-
+/*
 class ConfigureFortranRules extends RuleSource {
     @Mutate
     void configureToolChains(NativeToolChainRegistryInternal toolChains) {
@@ -155,4 +158,4 @@ class ConfigureFortranRules extends RuleSource {
     }
 }
 
-
+*/

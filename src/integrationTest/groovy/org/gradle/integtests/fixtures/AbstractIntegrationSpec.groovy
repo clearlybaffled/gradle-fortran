@@ -99,7 +99,7 @@ abstract class AbstractIntegrationSpec extends Specification {
 	}
 	
 	protected GradleRunner withStacktrace() {
-		gradleRunner = runner.withArguments("--stacktrace")
+		gradleRunner = runner.withArguments("--info --stacktrace")
 	}
 	
 	protected BuildResult succeeds(String... tasks) {
