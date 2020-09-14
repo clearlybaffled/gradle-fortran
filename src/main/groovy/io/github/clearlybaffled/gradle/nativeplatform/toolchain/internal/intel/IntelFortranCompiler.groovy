@@ -1,4 +1,4 @@
-package io.github.clearlybaffled.gradle.nativeplatform.toolchain.ifort
+package io.github.clearlybaffled.gradle.nativeplatform.toolchain.internal.intel
 
 import org.gradle.api.Action
 import org.gradle.internal.Transformers
@@ -18,7 +18,7 @@ import org.gradle.nativeplatform.toolchain.internal.OptionsFileArgsWriter
 import org.gradle.nativeplatform.toolchain.internal.gcc.GccCompilerArgsTransformer
 import org.gradle.nativeplatform.toolchain.internal.gcc.GccOptionsFileArgsWriter
 
-import io.github.clearlybaffled.gradle.nativeplatform.toolchain.FortranCompileSpec
+import io.github.clearlybaffled.gradle.nativeplatform.toolchain.internal.compilespec.FortranCompileSpec
 
 class IntelFortranCompiler extends NativeCompiler<FortranCompileSpec> {
 		

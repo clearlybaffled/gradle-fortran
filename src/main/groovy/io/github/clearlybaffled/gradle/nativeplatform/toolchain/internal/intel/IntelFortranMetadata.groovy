@@ -1,4 +1,4 @@
-package io.github.clearlybaffled.gradle.nativeplatform.toolchain.ifort
+package io.github.clearlybaffled.gradle.nativeplatform.toolchain.internal.intel
 
 import org.gradle.internal.impldep.com.google.common.collect.ImmutableList
 import org.gradle.nativeplatform.toolchain.internal.metadata.AbstractMetadataProvider

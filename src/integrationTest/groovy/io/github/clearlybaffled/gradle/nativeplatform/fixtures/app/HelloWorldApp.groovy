@@ -75,7 +75,7 @@ plugins {
 		switch(plugin) {
 			case 'c': return "c"
 			case 'cpp': return 'cpp'
-			case ~/.*fortran$/: return "c"
+			case ~/.*fortran$/: return "fortran"
 			default: null
 		}
 	}

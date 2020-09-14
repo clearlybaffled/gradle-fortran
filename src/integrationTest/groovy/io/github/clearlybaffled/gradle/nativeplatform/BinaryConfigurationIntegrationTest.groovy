@@ -20,6 +20,11 @@ model {
     }
     components {
         main(NativeExecutableSpec) {
+            sources { 
+                fortran {
+                    srcDir "src/main/fortran/*.f"
+                }
+            }
             binaries.all {
                 fortranCompiler.define 'ENABLE_GREETING'
             }

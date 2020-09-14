@@ -2,38 +2,28 @@ package io.github.clearlybaffled.gradle.language.fortran
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.Task
 import org.gradle.internal.service.ServiceRegistry
-import org.gradle.language.base.LanguageSourceSet
-import org.gradle.language.base.internal.LanguageSourceSetInternal
 import org.gradle.language.base.internal.SourceTransformTaskConfig
 import org.gradle.language.base.internal.registry.LanguageTransformContainer
 import org.gradle.language.base.plugins.ComponentModelBasePlugin
 import org.gradle.language.nativeplatform.internal.DependentSourceSetInternal
 import org.gradle.language.nativeplatform.internal.NativeLanguageTransform
-import org.gradle.language.nativeplatform.internal.SourceCompileTaskConfig
 import org.gradle.model.Each
 import org.gradle.model.Finalize
 import org.gradle.model.Mutate
 import org.gradle.model.RuleSource
 import org.gradle.nativeplatform.NativeBinarySpec
 import org.gradle.nativeplatform.internal.DefaultPreprocessingTool
-import org.gradle.nativeplatform.internal.NativeBinarySpecInternal
 import org.gradle.nativeplatform.plugins.NativeComponentModelPlugin
-import org.gradle.nativeplatform.toolchain.NativeToolChain
-import org.gradle.nativeplatform.toolchain.NativeToolChainRegistry
-import org.gradle.nativeplatform.toolchain.internal.NativeLanguage
-import org.gradle.nativeplatform.toolchain.internal.NativeToolChainRegistryInternal
 import org.gradle.nativeplatform.toolchain.internal.ToolType
-import org.gradle.nativeplatform.toolchain.internal.gcc.GccToolChain
-import org.gradle.platform.base.BinarySpec
 import org.gradle.platform.base.ComponentType
 import org.gradle.platform.base.TypeBuilder
 
-import io.github.clearlybaffled.gradle.internal.EnumHelper
-import io.github.clearlybaffled.gradle.language.fortran.tasks.FortranCompile
-import io.github.clearlybaffled.gradle.nativeplatform.toolchain.FortranToolChains
-import io.github.clearlybaffled.gradle.nativeplatform.toolchain.gfortran.FortranEnabledGccPlatformToolProvider
+import io.github.clearlybaffled.gradle.language.nativeplatform.internal.FortranSourceCompileTaskConfig
+import io.github.clearlybaffled.gradle.nativeplatform.NativeExecutableFortranSpec
+import io.github.clearlybaffled.gradle.nativeplatform.internal.FortranCompilerBinaryExecSpec
+import io.github.clearlybaffled.gradle.nativeplatform.toolchain.plugins.FortranToolChains
+
 
 /**
  * A plugin for projects wishing to build native binary components from Fortran sources.
@@ -41,20 +31,30 @@ import io.github.clearlybaffled.gradle.nativeplatform.toolchain.gfortran.Fortran
  * <p>Automatically includes the {@link org.gradle.nativeplatform.plugins.NativeComponentPlugin} for native component support.</p>
  *
  * <ul>
- * <li>Creates a {@link io.github.clearlybaffled.gradle.language.fortran.tasks.FortranCompile} task for each {@link io.github.clearlybaffled.gradle.language.fortran.FortranSourceSet} to compile the C sources.</li>
+ * <li>Creates a {@link io.github.clearlybaffled.gradle.language.fortran.tasks.FortranCompile} task for each {@link io.github.clearlybaffled.gradle.language.fortran.FortranSourceSet} to compile the Fortran sources.</li>
  * </ul>
  */
 class FortranPlugin implements Plugin<Project> {
     @Override
     public void apply(Project project) {
-        EnumHelper.addEntry(NativeLanguage, "FORTRAN")
         project.getPluginManager().apply(NativeComponentModelPlugin)
         project.getPluginManager().apply(FortranLangPlugin)
 		project.getPluginManager().apply(FortranToolChains)
     }
+    
+    static class Rules extends RuleSource {
+        @ComponentType
+        void nativeExecutable(TypeBuilder<NativeExecutableFortranSpec> builder) {
+            builder.defaultImplementation(FortranCompilerBinaryExecSpec)
+        }
+
+    }
 }
 
 
+/**
+ *  Adds core Fortran language support.
+ */
 class FortranLangPlugin implements Plugin<Project> {
 
     @Override
@@ -98,39 +98,13 @@ class FortranLangPlugin implements Plugin<Project> {
 
 		@Override
         public ToolType getToolType() {
-            ToolType.FORTRAN_COMPILER
+            null
         }
 
         @Override
         public SourceTransformTaskConfig getTransformTask() {
             new FortranSourceCompileTaskConfig(this)
-            //new SourceCompileTaskConfig(this, FortranCompile)
         }
 
     }
-}
-
-class FortranSourceCompileTaskConfig extends SourceCompileTaskConfig {
-
-    public FortranSourceCompileTaskConfig(NativeLanguageTransform<FortranSourceSet> languageTransform) {
-        super(languageTransform, FortranCompile)
-    }
-
-    @Override
-    public void configureTask(Task task, BinarySpec binary, LanguageSourceSet sourceSet, ServiceRegistry serviceRegistry) {
-        def toolRegistry  = serviceRegistry.get(NativeToolChainRegistry) as NativeToolChainRegistryInternal
-        
-        def spec = binary as NativeBinarySpecInternal
-        def source = sourceSet as LanguageSourceSetInternal
-        
-        def toolChain = toolRegistry.getForPlatform(NativeLanguage.FORTRAN, spec.getTargetPlatform())
-        
-        def toolProvider = toolChain.select(NativeLanguage.FORTRAN, spec.getTargetPlatform())
-        
-        spec.setToolChain(toolChain)
-        spec.setPlatformToolProvider(toolProvider)    
-        
-        def configuredTask = super.configureTask(task, spec, sourceSet, serviceRegistry)
-    }
-    
 }

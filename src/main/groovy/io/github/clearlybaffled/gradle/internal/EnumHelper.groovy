@@ -29,13 +29,15 @@ class EnumHelper {
         T[] oldValues = (T[]) valuesField.get(null)
 
         def args = [name, oldValues.length]
-        args << parameters
+        if (parameters != []) {
+            args << parameters
+        }
 
         T enumValue = (T) ca.newInstance(args.flatten().toArray())
         T[] newValues = Array.newInstance(enumClass, oldValues.length + 1) as T[]
         System.arraycopy(oldValues, 0, newValues, 0, oldValues.length)
         newValues[oldValues.length] = enumValue
-        valuesField.set(null, newValues  )
+        valuesField.set(null, newValues)
 
         Field constantDir = enumClass.getDeclaredField('enumConstantDirectory')
         makeAccessible(constantDir)

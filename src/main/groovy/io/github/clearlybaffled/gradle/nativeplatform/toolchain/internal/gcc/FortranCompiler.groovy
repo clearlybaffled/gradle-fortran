@@ -1,4 +1,4 @@
-package io.github.clearlybaffled.gradle.nativeplatform.toolchain.gfortran
+package io.github.clearlybaffled.gradle.nativeplatform.toolchain.internal.gcc
 
 import org.gradle.api.Action
 import org.gradle.internal.Transformers
@@ -15,18 +15,17 @@ import org.gradle.nativeplatform.toolchain.internal.CommandLineToolInvocationWor
 import org.gradle.nativeplatform.toolchain.internal.MacroArgsConverter
 import org.gradle.nativeplatform.toolchain.internal.NativeCompiler
 import org.gradle.nativeplatform.toolchain.internal.OptionsFileArgsWriter
-import org.gradle.nativeplatform.toolchain.internal.gcc.GccCompilerArgsTransformer
 import org.gradle.nativeplatform.toolchain.internal.gcc.GccOptionsFileArgsWriter
 
-import io.github.clearlybaffled.gradle.nativeplatform.toolchain.FortranCompileSpec
+import io.github.clearlybaffled.gradle.nativeplatform.toolchain.internal.compilespec.FortranCompileSpec
 
-class GFortranCompiler extends NativeCompiler<FortranCompileSpec> {
+class FortranCompiler extends NativeCompiler<FortranCompileSpec> {
 
-    GFortranCompiler(BuildOperationExecutor buildOperationExecutor, CompilerOutputFileNamingSchemeFactory compilerOutputFileNamingSchemeFactory, CommandLineToolInvocationWorker commandLineToolInvocationWorker, CommandLineToolContext invocationContext, String objectFileExtension, boolean useCommandFile, WorkerLeaseService workerLeaseService) {
-        super(buildOperationExecutor, compilerOutputFileNamingSchemeFactory, commandLineToolInvocationWorker, invocationContext, new GFortranCompileArgsTransformer(), Transformers.<FortranCompileSpec>noOpTransformer(), objectFileExtension, useCommandFile, workerLeaseService)
+    FortranCompiler(BuildOperationExecutor buildOperationExecutor, CompilerOutputFileNamingSchemeFactory compilerOutputFileNamingSchemeFactory, CommandLineToolInvocationWorker commandLineToolInvocationWorker, CommandLineToolContext invocationContext, String objectFileExtension, boolean useCommandFile, WorkerLeaseService workerLeaseService) {
+        super(buildOperationExecutor, compilerOutputFileNamingSchemeFactory, commandLineToolInvocationWorker, invocationContext, new FortranCompileArgsTransformer(), Transformers.<FortranCompileSpec>noOpTransformer(), objectFileExtension, useCommandFile, workerLeaseService)
     }
 
-    private static class GFortranCompileArgsTransformer implements ArgsTransformer<FortranCompileSpec> {
+    private static class FortranCompileArgsTransformer implements ArgsTransformer<FortranCompileSpec> {
 
         @Override
         public List<String> transform(FortranCompileSpec spec) {
@@ -73,12 +72,12 @@ class GFortranCompiler extends NativeCompiler<FortranCompileSpec> {
     }
 }
 
-class GFortranLinker extends AbstractCompiler<LinkerSpec>  {
-    GFortranLinker(BuildOperationExecutor buildOperationExecutor, CommandLineToolInvocationWorker commandLineToolInvocationWorker, CommandLineToolContext invocationContext, boolean useCommandFile, WorkerLeaseService workerLeaseService) {
-        super(buildOperationExecutor, commandLineToolInvocationWorker, invocationContext, new GFortranLinkerArgsTransformer(), useCommandFile, workerLeaseService)
+class FortranLinker extends AbstractCompiler<LinkerSpec>  {
+    FortranLinker(BuildOperationExecutor buildOperationExecutor, CommandLineToolInvocationWorker commandLineToolInvocationWorker, CommandLineToolContext invocationContext, boolean useCommandFile, WorkerLeaseService workerLeaseService) {
+        super(buildOperationExecutor, commandLineToolInvocationWorker, invocationContext, new FortranLinkerArgsTransformer(), useCommandFile, workerLeaseService)
     }
 
-    private static class GFortranLinkerArgsTransformer implements ArgsTransformer<LinkerSpec> {
+    private static class FortranLinkerArgsTransformer implements ArgsTransformer<LinkerSpec> {
         @Override
         public List<String> transform(LinkerSpec spec) {
             def args = []
